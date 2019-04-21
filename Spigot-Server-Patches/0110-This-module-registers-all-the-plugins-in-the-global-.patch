@@ -1,0 +1,33 @@
+From b5f8e1f6d0041d2ed39c1882af1a477ceb22c9f0 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:16:55 -0500
+Subject: [PATCH] This module registers all the plugins in the global injector
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/PluginModule.java b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+new file mode 100644
+index 00000000..89e9877a
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+@@ -0,0 +1,18 @@
++package org.bukkit.craftbukkit;
++
++import me.fixeddev.inject.ProtectedModule;
++import org.bukkit.plugin.Plugin;
++
++public class PluginModule extends ProtectedModule {
++
++    private Plugin[] plugins;
++
++    public PluginModule(Plugin[] plugins) {
++        this.plugins = plugins;
++    }
++
++    @Override
++    protected void configure() {
++        super.configure();
++    }
++}
+-- 
+2.21.0.windows.1
+

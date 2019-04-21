@@ -1,0 +1,45 @@
+From f12cbe7b04d949e182268f02b478f05259bf7671 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:30:24 -0500
+Subject: [PATCH] This doesn't need to be a ProtectedModule
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftModule.java b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+index 22b72c8b..75e7a980 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit;
+ 
++import com.google.inject.AbstractModule;
+ import com.google.inject.multibindings.OptionalBinder;
+ import me.fixeddev.inject.ProtectedModule;
+ import org.bukkit.Server;
+@@ -8,7 +9,7 @@ import org.bukkit.plugin.PluginManager;
+ import org.bukkit.plugin.ServicesManager;
+ import org.bukkit.scheduler.BukkitScheduler;
+ 
+-public class CraftModule extends ProtectedModule {
++public class CraftModule extends AbstractModule {
+     private CraftServer server;
+     private PluginManager pluginManager;
+     private CraftScheduler scheduler;
+diff --git a/src/main/java/org/bukkit/craftbukkit/PluginModule.java b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+index 684bdec4..5dd312b3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/PluginModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+@@ -1,9 +1,9 @@
+ package org.bukkit.craftbukkit;
+ 
+-import me.fixeddev.inject.ProtectedModule;
++import com.google.inject.AbstractModule;
+ import org.bukkit.plugin.Plugin;
+ 
+-public class PluginModule extends ProtectedModule {
++public class PluginModule extends AbstractModule {
+ 
+     private Plugin[] plugins;
+ 
+-- 
+2.21.0.windows.1
+

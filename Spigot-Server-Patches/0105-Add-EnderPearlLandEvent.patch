@@ -1,0 +1,40 @@
+From fd6f6c96f99ad2091200d3d8a2bcfc85509817cd Mon Sep 17 00:00:00 2001
+From: BuildTools <gilbertodamian14@gmail.com>
+Date: Mon, 9 Jul 2018 15:02:41 -0500
+Subject: [PATCH] Add EnderPearlLandEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityEnderPearl.java b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+index 319c0bc6..177e559e 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderPearl.java
++++ b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+@@ -2,7 +2,9 @@ package net.minecraft.server;
+ 
+ // CraftBukkit start
+ import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.entity.CraftEnderPearl;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.EnderpearlLandEvent;
+ import org.bukkit.event.player.PlayerTeleportEvent;
+ // CraftBukkit end
+ 
+@@ -49,6 +51,16 @@ public class EntityEnderPearl extends EntityProjectile {
+                 if (entityplayer.playerConnection.a().g() && entityplayer.world == this.world && !entityplayer.isSleeping()) {
+                     // CraftBukkit start - Fire PlayerTeleportEvent
+                     org.bukkit.craftbukkit.entity.CraftPlayer player = entityplayer.getBukkitEntity();
++
++                    EnderpearlLandEvent.Reason reason = movingobjectposition.entity != null ? EnderpearlLandEvent.Reason.ENTITY : EnderpearlLandEvent.Reason.BLOCK;
++                    EnderpearlLandEvent landEvent = new EnderpearlLandEvent((CraftEnderPearl) getBukkitEntity(),reason);
++                    Bukkit.getPluginManager().callEvent(landEvent);
++
++                    if(landEvent.isCancelled()){
++                        this.die();
++                        return;
++                    }
++
+                     org.bukkit.Location location = getBukkitEntity().getLocation();
+                     location.setPitch(player.getLocation().getPitch());
+                     location.setYaw(player.getLocation().getYaw());
+-- 
+2.21.0.windows.1
+

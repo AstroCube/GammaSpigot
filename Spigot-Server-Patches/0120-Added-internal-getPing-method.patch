@@ -1,0 +1,24 @@
+From 1eb3ff96a73945416f45108d22ff7c1a63d1c89b Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 01:43:19 -0500
+Subject: [PATCH] Added internal getPing method
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index c0407c25..594ba603 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1446,6 +1446,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+     }
+ 
++    public int getPing(){
++        return getHandle().ping;
++    }
++
+     // Spigot start
+     private final Player.Spigot spigot = new Player.Spigot() {
+ 
+-- 
+2.21.0.windows.1
+

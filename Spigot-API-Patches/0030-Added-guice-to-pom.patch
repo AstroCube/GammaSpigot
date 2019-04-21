@@ -1,0 +1,33 @@
+From f9a67ff926149c11e8c8ca9518d042df833ecad7 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 22:17:38 -0500
+Subject: [PATCH] Added guice to pom
+
+
+diff --git a/pom.xml b/pom.xml
+index fe9d6d26..e6f9bfd5 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -80,6 +80,19 @@
+             <artifactId>gson</artifactId>
+           <version>2.2.4</version>
+         </dependency>
++
++        <dependency>
++            <groupId>com.google.inject</groupId>
++            <artifactId>guice</artifactId>
++            <version>4.2.2</version>
++            <scope>compile</scope>
++        </dependency>
++
++        <dependency>
++            <groupId>com.google.inject</groupId>
++            <artifactId>guice</artifactId>
++            <version>4.2.2</version>
++        </dependency>
+         <dependency>
+             <groupId>org.avaje</groupId>
+             <artifactId>ebean</artifactId>
+-- 
+2.21.0.windows.1
+

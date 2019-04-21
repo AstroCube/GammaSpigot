@@ -1,0 +1,113 @@
+From 74648404ed3eb69101e5e963f148d4493ed426dd Mon Sep 17 00:00:00 2001
+From: BuildTools <gilbertodamian14@gmail.com>
+Date: Mon, 9 Jul 2018 15:13:01 -0500
+Subject: [PATCH] Add configuration option to allow enderpearls go through
+ tripwire and open fence gates
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityEnderPearl.java b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+index 177e559e..3023e07c 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderPearl.java
++++ b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+@@ -1,11 +1,16 @@
+ package net.minecraft.server;
+ 
+ // CraftBukkit start
++
+ import org.bukkit.Bukkit;
+ import org.bukkit.craftbukkit.entity.CraftEnderPearl;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.event.entity.EnderpearlLandEvent;
+ import org.bukkit.event.player.PlayerTeleportEvent;
++import org.bukkit.material.Gate;
++import org.bukkit.util.BlockIterator;
++import org.bukkit.util.Vector;
++import org.github.paperspigot.PaperSpigotConfig;
+ // CraftBukkit end
+ 
+ public class EntityEnderPearl extends EntityProjectile {
+@@ -26,6 +31,37 @@ public class EntityEnderPearl extends EntityProjectile {
+     protected void a(MovingObjectPosition movingobjectposition) {
+         EntityLiving entityliving = this.getShooter();
+ 
++        if (!PaperSpigotConfig.enderpearlCollidesStringFenceGate) {
++            IBlockData block = this.world.getType(movingobjectposition.a());
++
++            if (block == Blocks.TRIPWIRE) {
++                return;
++            } else if (block == Blocks.FENCE_GATE) {
++                BlockIterator bi = null;
++                try {
++                    Vector l = new Vector(this.locX, this.locY, this.locZ);
++                    Vector l2 = new Vector(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
++                    Vector dir = new Vector(l2.getX() - l.getX(), l2.getY() - l.getY(), l2.getZ() - l.getZ()).normalize();
++                    bi = new BlockIterator(this.world.getWorld(), l, dir, 0, 1);
++                } catch (IllegalStateException e) {
++                    // Do nothing
++                }
++                if (bi != null) {
++                    boolean open = true;
++                    while (bi.hasNext()) {
++                        org.bukkit.block.Block b = bi.next();
++                        if (b.getState().getData() instanceof Gate && !((Gate) b.getState().getData()).isOpen()) {
++                            open = false;
++                            break;
++                        }
++                    }
++                    if (open) {
++                        return;
++                    }
++                }
++            }
++        }
++
+         if (movingobjectposition.entity != null) {
+             if (movingobjectposition.entity == this.c) {
+                 return;
+@@ -53,10 +89,10 @@ public class EntityEnderPearl extends EntityProjectile {
+                     org.bukkit.craftbukkit.entity.CraftPlayer player = entityplayer.getBukkitEntity();
+ 
+                     EnderpearlLandEvent.Reason reason = movingobjectposition.entity != null ? EnderpearlLandEvent.Reason.ENTITY : EnderpearlLandEvent.Reason.BLOCK;
+-                    EnderpearlLandEvent landEvent = new EnderpearlLandEvent((CraftEnderPearl) getBukkitEntity(),reason);
++                    EnderpearlLandEvent landEvent = new EnderpearlLandEvent((CraftEnderPearl) getBukkitEntity(), reason);
+                     Bukkit.getPluginManager().callEvent(landEvent);
+ 
+-                    if(landEvent.isCancelled()){
++                    if (landEvent.isCancelled()) {
+                         this.die();
+                         return;
+                     }
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index c890f3dd..73a861a5 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -645,7 +645,7 @@ public abstract class EntityLiving extends Entity {
+             PotionEffect effect = new PotionEffect(PotionEffectType.getById(mobeffect.getEffectId()), mobeffect.getDuration(), mobeffect.getAmplifier(), mobeffect.isAmbient());
+             PotionEffectRemoveEvent event = new PotionEffectRemoveEvent((org.bukkit.entity.LivingEntity) getBukkitEntity(), effect);
+             this.world.getServer().getPluginManager().callEvent(event);
+-            
++
+             this.b(mobeffect);
+         }
+ 
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+index 6e599951..356b07e5 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+@@ -131,6 +131,13 @@ public class PaperSpigotConfig {
+         disableSprintKnockback = getBoolean("settings.disable-sprint-knockback", false);
+     }
+ 
++    public static boolean enderpearlCollidesStringFenceGate;
++
++    private static void enderpearlCollidesStringFenceGate() {
++        enderpearlCollidesStringFenceGate = getBoolean("settings.enderpearl-collides-string-fence-gate", true);
++    }
++
++
+     public static boolean interactLimitEnabled;
+ 
+     private static void interactLimitEnabled() {
+-- 
+2.21.0.windows.1
+

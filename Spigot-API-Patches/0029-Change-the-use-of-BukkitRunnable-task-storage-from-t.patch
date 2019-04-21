@@ -1,0 +1,154 @@
+From 6a6406e12a6435b95873180347d1d9a374244d56 Mon Sep 17 00:00:00 2001
+From: BuildTools <gilbertodamian14@gmail.com>
+Date: Thu, 16 Aug 2018 01:46:30 -0500
+Subject: [PATCH] Change the use of BukkitRunnable task storage from taskId to
+ directly storage the task, also add checkNotYetScheduled(), checkScheduled()
+ and isCancelled() methods
+
+
+diff --git a/src/main/java/org/bukkit/scheduler/BukkitRunnable.java b/src/main/java/org/bukkit/scheduler/BukkitRunnable.java
+index c146ec7a..bc548e0d 100644
+--- a/src/main/java/org/bukkit/scheduler/BukkitRunnable.java
++++ b/src/main/java/org/bukkit/scheduler/BukkitRunnable.java
+@@ -7,7 +7,18 @@ import org.bukkit.plugin.Plugin;
+  * This class is provided as an easy way to handle scheduling tasks.
+  */
+ public abstract class BukkitRunnable implements Runnable {
+-    private int taskId = -1;
++    private BukkitTask task;
++
++    /**
++     * Returns true if this task has been cancelled.
++     *
++     * @return true if the task has been cancelled
++     * @throws IllegalStateException if task was not scheduled yet
++     */
++    public synchronized boolean isCancelled() throws IllegalStateException {
++        checkScheduled();
++        return task.isCancelled();
++    }
+ 
+     /**
+      * Attempts to cancel this task.
+@@ -28,8 +39,8 @@ public abstract class BukkitRunnable implements Runnable {
+      * @see BukkitScheduler#runTask(Plugin, Runnable)
+      */
+     public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTask(plugin, (Runnable) this));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTask(plugin, (Runnable) this));
+     }
+ 
+     /**
+@@ -45,8 +56,8 @@ public abstract class BukkitRunnable implements Runnable {
+      * @see BukkitScheduler#runTaskAsynchronously(Plugin, Runnable)
+      */
+     public synchronized BukkitTask runTaskAsynchronously(Plugin plugin) throws IllegalArgumentException, IllegalStateException  {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTaskAsynchronously(plugin, (Runnable) this));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTaskAsynchronously(plugin, (Runnable) this));
+     }
+ 
+     /**
+@@ -60,8 +71,8 @@ public abstract class BukkitRunnable implements Runnable {
+      * @see BukkitScheduler#runTaskLater(Plugin, Runnable, long)
+      */
+     public synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException  {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTaskLater(plugin, (Runnable) this, delay));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTaskLater(plugin, (Runnable) this, delay));
+     }
+ 
+     /**
+@@ -79,8 +90,8 @@ public abstract class BukkitRunnable implements Runnable {
+      * @see BukkitScheduler#runTaskLaterAsynchronously(Plugin, Runnable, long)
+      */
+     public synchronized BukkitTask runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException  {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, (Runnable) this, delay));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, (Runnable) this, delay));
+     }
+ 
+     /**
+@@ -96,8 +107,8 @@ public abstract class BukkitRunnable implements Runnable {
+      * @see BukkitScheduler#runTaskTimer(Plugin, Runnable, long, long)
+      */
+     public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException  {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTaskTimer(plugin, (Runnable) this, delay, period));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTaskTimer(plugin, (Runnable) this, delay, period));
+     }
+ 
+     /**
+@@ -118,8 +129,8 @@ public abstract class BukkitRunnable implements Runnable {
+      *     long)
+      */
+     public synchronized BukkitTask runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException  {
+-        checkState();
+-        return setupId(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, (Runnable) this, delay, period));
++        checkNotYetScheduled();
++        return setupTask(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, (Runnable) this, delay, period));
+     }
+ 
+     /**
+@@ -129,21 +140,24 @@ public abstract class BukkitRunnable implements Runnable {
+      * @throws IllegalStateException if task was not scheduled yet
+      */
+     public synchronized int getTaskId() throws IllegalStateException {
+-        final int id = taskId;
+-        if (id == -1) {
++        checkScheduled();
++        return task.getTaskId();
++    }
++
++    private void checkScheduled() {
++        if (task == null) {
+             throw new IllegalStateException("Not scheduled yet");
+         }
+-        return id;
+     }
+ 
+-    private void checkState() {
+-        if (taskId != -1) {
+-            throw new IllegalStateException("Already scheduled as " + taskId);
++    private void checkNotYetScheduled() {
++        if (task != null) {
++            throw new IllegalStateException("Already scheduled as " + task.getTaskId());
+         }
+     }
+ 
+-    private BukkitTask setupId(final BukkitTask task) {
+-        this.taskId = task.getTaskId();
++    private BukkitTask setupTask(final BukkitTask task) {
++        this.task = task;
+         return task;
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/src/main/java/org/bukkit/scheduler/BukkitTask.java b/src/main/java/org/bukkit/scheduler/BukkitTask.java
+index e447e64e..9c693f83 100644
+--- a/src/main/java/org/bukkit/scheduler/BukkitTask.java
++++ b/src/main/java/org/bukkit/scheduler/BukkitTask.java
+@@ -28,6 +28,13 @@ public interface BukkitTask {
+      */
+     public boolean isSync();
+ 
++    /**
++     * Returns true if this task has been cancelled.
++     *
++     * @return true if the task has been cancelled
++     */
++    public boolean isCancelled();
++
+     /**
+      * Will attempt to cancel this task.
+      */
+-- 
+2.21.0.windows.1
+

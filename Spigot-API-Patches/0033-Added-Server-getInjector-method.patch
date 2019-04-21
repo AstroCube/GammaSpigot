@@ -1,0 +1,30 @@
+From 4790810d12e74b7d885899ffd6b62caab1f6aaeb Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 22:33:10 -0500
+Subject: [PATCH] Added Server#getInjector method
+
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 1b62463a..6f85c35e 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -12,6 +12,7 @@ import java.util.Set;
+ import java.util.UUID;
+ import java.util.logging.Logger;
+ 
++import com.google.inject.Injector;
+ import org.bukkit.Warning.WarningState;
+ import org.bukkit.command.CommandException;
+ import org.bukkit.command.CommandMap;
+@@ -359,6 +360,8 @@ public interface Server extends PluginMessageRecipient {
+      */
+     public Player getPlayer(UUID id);
+ 
++    public Injector getInjector();
++
+     /**
+      * Gets the plugin manager for interfacing with plugins.
+      *
+-- 
+2.21.0.windows.1
+

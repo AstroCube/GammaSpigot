@@ -1,0 +1,46 @@
+From 02a78f4d0701f1afd5fb5688ba9cdfd243f28537 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:16:35 -0500
+Subject: [PATCH] Added ServerModule "implementation"
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftModule.java b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+new file mode 100644
+index 00000000..82cf8075
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+@@ -0,0 +1,31 @@
++package org.bukkit.craftbukkit;
++
++import com.google.inject.multibindings.OptionalBinder;
++import me.fixeddev.inject.ProtectedModule;
++import org.bukkit.Server;
++import org.bukkit.craftbukkit.scheduler.CraftScheduler;
++import org.bukkit.plugin.PluginManager;
++import org.bukkit.plugin.ServicesManager;
++import org.bukkit.scheduler.BukkitScheduler;
++
++public class CraftModule extends ProtectedModule {
++    private CraftServer server;
++    private PluginManager pluginManager;
++    private CraftScheduler scheduler;
++    private ServicesManager servicesManager;
++
++    public CraftModule(CraftServer server, PluginManager pluginManager, CraftScheduler scheduler, ServicesManager servicesManager) {
++        this.server = server;
++        this.pluginManager = pluginManager;
++        this.scheduler = scheduler;
++        this.servicesManager = servicesManager;
++    }
++
++    @Override
++    protected void configure() {
++        OptionalBinder.newOptionalBinder(binder(), Server.class).setBinding().toInstance(server);
++        OptionalBinder.newOptionalBinder(binder(), PluginManager.class).setBinding().toInstance(pluginManager);
++        OptionalBinder.newOptionalBinder(binder(), BukkitScheduler.class).setBinding().toInstance(scheduler);
++        OptionalBinder.newOptionalBinder(binder(), ServicesManager.class).setBinding().toInstance(servicesManager);
++    }
++}
+-- 
+2.21.0.windows.1
+

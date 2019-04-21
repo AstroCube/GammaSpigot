@@ -1,0 +1,31 @@
+From cc4153871ab76e427c5d33cc3ca9451f70c5d1cf Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 01:34:07 -0500
+Subject: [PATCH] Change api.version from unknown to 1.8.8
+
+
+diff --git a/pom.xml b/pom.xml
+index 6aaba502..eb7104b5 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -10,7 +10,7 @@
+ 
+     <properties>
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+-        <api.version>unknown</api.version>
++        <api.version>1.8.8</api.version>
+         <junit.version>4.11</junit.version>
+         <minecraft.version>1.8.8</minecraft.version>
+         <minecraft_version>1_8_R3</minecraft_version>
+@@ -135,7 +135,7 @@
+                         <manifestEntries>
+                             <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
+                             <Implementation-Title>CraftBukkit</Implementation-Title>
+-                            <Implementation-Version>${describe}</Implementation-Version>
++                            <Implementation-Version>${minecraft_version}</Implementation-Version>
+                             <Implementation-Vendor>Bukkit Team</Implementation-Vendor>
+                             <Specification-Title>Bukkit</Specification-Title>
+                             <Specification-Version>${api.version}</Specification-Version>
+-- 
+2.21.0.windows.1
+

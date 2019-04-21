@@ -1,0 +1,22 @@
+From 9e91e6c210c4309e748183d38f9d3423b1c0b610 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 01:43:43 -0500
+Subject: [PATCH] Use getTask method instead of just the task field
+
+
+diff --git a/src/main/java/co/aikar/timings/SpigotTimings.java b/src/main/java/co/aikar/timings/SpigotTimings.java
+index b3cafafc..a0f4ed93 100644
+--- a/src/main/java/co/aikar/timings/SpigotTimings.java
++++ b/src/main/java/co/aikar/timings/SpigotTimings.java
+@@ -45,7 +45,7 @@ public final class SpigotTimings {
+         }
+         Plugin plugin;
+ 
+-        Runnable task = ((CraftTask) bukkitTask).task;
++        Runnable task = ((CraftTask) bukkitTask).getTask();
+ 
+         final Class<? extends Runnable> taskClass = task.getClass();
+         if (bukkitTask.getOwner() != null) {
+-- 
+2.21.0.windows.1
+

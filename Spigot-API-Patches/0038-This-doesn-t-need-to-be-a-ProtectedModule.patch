@@ -1,0 +1,28 @@
+From e7a901e56a40d3af81d03b61aef031eb4d71390a Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:30:25 -0500
+Subject: [PATCH] This doesn't need to be a ProtectedModule
+
+
+diff --git a/src/main/java/org/bukkit/ServerModule.java b/src/main/java/org/bukkit/ServerModule.java
+index e9cc8021..b9e4ab98 100644
+--- a/src/main/java/org/bukkit/ServerModule.java
++++ b/src/main/java/org/bukkit/ServerModule.java
+@@ -1,12 +1,12 @@
+ package org.bukkit;
+ 
++import com.google.inject.AbstractModule;
+ import com.google.inject.multibindings.OptionalBinder;
+-import me.fixeddev.inject.ProtectedModule;
+ import org.bukkit.plugin.PluginManager;
+ import org.bukkit.plugin.ServicesManager;
+ import org.bukkit.scheduler.BukkitScheduler;
+ 
+-public class ServerModule extends ProtectedModule {
++public class ServerModule extends AbstractModule {
+     @Override
+     protected void configure() {
+         OptionalBinder.newOptionalBinder(binder(), Server.class);
+-- 
+2.21.0.windows.1
+

@@ -1,0 +1,255 @@
+From 7c082bc96c199d2c5409d430a7bcf69d262353c6 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 22:31:43 -0500
+Subject: [PATCH] Adapt some of this to make it work with normal JavaPlugin
+
+
+diff --git a/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java b/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java
+index b791b20b..201b91a6 100644
+--- a/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java
++++ b/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java
+@@ -3,9 +3,8 @@ package me.fixeddev.inject;
+ import com.google.inject.Binder;
+ import com.google.inject.Module;
+ import com.google.inject.PrivateBinder;
+-import org.jetbrains.annotations.Nullable;
+ 
+-class ProtectedBinderImpl implements ProtectedBinder {
++public class ProtectedBinderImpl implements ProtectedBinder {
+ 
+     private static Class[] SKIP = new Class[]{
+             ForwardingBinder.class,
+@@ -57,7 +56,7 @@ class ProtectedBinderImpl implements ProtectedBinder {
+         }
+     }
+ 
+-    static @Nullable ProtectedBinder current(Binder binder) {
++    public static ProtectedBinder current(Binder binder) {
+         if(binder instanceof ProtectedBinder) {
+             return (ProtectedBinder) binder;
+         }
+diff --git a/src/main/java/me/fixeddev/inject/ProtectedModule.java b/src/main/java/me/fixeddev/inject/ProtectedModule.java
+index 8c9bb7a9..3a316c4b 100644
+--- a/src/main/java/me/fixeddev/inject/ProtectedModule.java
++++ b/src/main/java/me/fixeddev/inject/ProtectedModule.java
+@@ -1,7 +1,5 @@
+ package me.fixeddev.inject;
+ 
+-import javax.annotation.Nullable;
+-
+ import com.google.inject.Binder;
+ import com.google.inject.Module;
+ 
+@@ -21,10 +19,10 @@ public abstract class ProtectedModule implements Module, ForwardingProtectedBind
+ 
+     protected void configure() {}
+ 
+-    private final @Nullable Object moduleKey;
+-    private @Nullable ProtectedBinder binder;
++    private final Object moduleKey;
++    private ProtectedBinder binder;
+ 
+-    protected ProtectedModule(@Nullable Object moduleKey) {
++    protected ProtectedModule(Object moduleKey) {
+         this.moduleKey = moduleKey;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+index c961b18c..542fc49f 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+@@ -15,6 +15,12 @@ import java.util.List;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
++import com.google.inject.Binder;
++import com.google.inject.Module;
++import me.fixeddev.inject.ForwardingProtectedBinder;
++import me.fixeddev.inject.ProtectedBinder;
++import me.fixeddev.inject.ProtectedBinderImpl;
++import me.fixeddev.inject.ProtectedModule;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.Server;
+ import org.bukkit.Warning.WarningState;
+@@ -44,7 +50,7 @@ import com.google.common.io.ByteStreams;
+ /**
+  * Represents a Java plugin
+  */
+-public abstract class JavaPlugin extends PluginBase {
++public abstract class JavaPlugin extends PluginBase implements Module, ForwardingProtectedBinder {
+     private boolean isEnabled = false;
+     private PluginLoader loader = null;
+     private Server server = null;
+@@ -58,6 +64,10 @@ public abstract class JavaPlugin extends PluginBase {
+     private File configFile = null;
+     private PluginLogger logger = null;
+ 
++    // fdSpigot start
++    private ProtectedBinder binder;
++    // fdSpigot end
++
+     public JavaPlugin() {
+         final ClassLoader classLoader = this.getClass().getClassLoader();
+         if (!(classLoader instanceof PluginClassLoader)) {
+@@ -67,16 +77,16 @@ public abstract class JavaPlugin extends PluginBase {
+     }
+ 
+     /**
+-     * @deprecated This method is intended for unit testing purposes when the
+-     *     other {@linkplain #JavaPlugin(JavaPluginLoader,
+-     *     PluginDescriptionFile, File, File) constructor} cannot be used.
+-     *     <p>
+-     *     Its existence may be temporary.
+-     * @param loader the plugin loader
+-     * @param server the server instance
++     * @param loader      the plugin loader
++     * @param server      the server instance
+      * @param description the plugin's description
+-     * @param dataFolder the plugin's data folder
+-     * @param file the location of the plugin
++     * @param dataFolder  the plugin's data folder
++     * @param file        the location of the plugin
++     * @deprecated This method is intended for unit testing purposes when the
++     * other {@linkplain #JavaPlugin(JavaPluginLoader,
++     * PluginDescriptionFile, File, File) constructor} cannot be used.
++     * <p>
++     * Its existence may be temporary.
+      */
+     @Deprecated
+     protected JavaPlugin(final PluginLoader loader, final Server server, final PluginDescriptionFile description, final File dataFolder, final File file) {
+@@ -326,14 +336,14 @@ public abstract class JavaPlugin extends PluginBase {
+     }
+ 
+     /**
+-     * @param loader the plugin loader
+-     * @param server the server instance
++     * @param loader      the plugin loader
++     * @param server      the server instance
+      * @param description the plugin's description
+-     * @param dataFolder the plugin's data folder
+-     * @param file the location of the plugin
++     * @param dataFolder  the plugin's data folder
++     * @param file        the location of the plugin
+      * @param classLoader the class loader
+      * @deprecated This method is legacy and will be removed - it must be
+-     *     replaced by the specially provided constructor(s).
++     * replaced by the specially provided constructor(s).
+      */
+     @Deprecated
+     protected final void initialize(PluginLoader loader, Server server, PluginDescriptionFile description, File dataFolder, File file, ClassLoader classLoader) {
+@@ -395,7 +405,7 @@ public abstract class JavaPlugin extends PluginBase {
+      *
+      * @return true if this plugin is initialized, otherwise false
+      * @deprecated This method cannot return false, as {@link
+-     *     JavaPlugin} is now initialized in the constructor.
++     * JavaPlugin} is now initialized in the constructor.
+      */
+     @Deprecated
+     public final boolean isInitialized() {
+@@ -442,13 +452,16 @@ public abstract class JavaPlugin extends PluginBase {
+     }
+ 
+     @Override
+-    public void onLoad() {}
++    public void onLoad() {
++    }
+ 
+     @Override
+-    public void onDisable() {}
++    public void onDisable() {
++    }
+ 
+     @Override
+-    public void onEnable() {}
++    public void onEnable() {
++    }
+ 
+     @Override
+     public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+@@ -503,19 +516,19 @@ public abstract class JavaPlugin extends PluginBase {
+      * does not extend the class, where the intended plugin would have
+      * resided in a different jar / classloader.
+      *
+-     * @param <T> a class that extends JavaPlugin
++     * @param <T>   a class that extends JavaPlugin
+      * @param clazz the class desired
+      * @return the plugin that provides and implements said class
+      * @throws IllegalArgumentException if clazz is null
+      * @throws IllegalArgumentException if clazz does not extend {@link
+-     *     JavaPlugin}
+-     * @throws IllegalStateException if clazz was not provided by a plugin,
+-     *     for example, if called with
+-     *     <code>JavaPlugin.getPlugin(JavaPlugin.class)</code>
+-     * @throws IllegalStateException if called from the static initializer for
+-     *     given JavaPlugin
+-     * @throws ClassCastException if plugin that provided the class does not
+-     *     extend the class
++     *                                  JavaPlugin}
++     * @throws IllegalStateException    if clazz was not provided by a plugin,
++     *                                  for example, if called with
++     *                                  <code>JavaPlugin.getPlugin(JavaPlugin.class)</code>
++     * @throws IllegalStateException    if called from the static initializer for
++     *                                  given JavaPlugin
++     * @throws ClassCastException       if plugin that provided the class does not
++     *                                  extend the class
+      */
+     public static <T extends JavaPlugin> T getPlugin(Class<T> clazz) {
+         Validate.notNull(clazz, "Null class cannot have a plugin");
+@@ -540,10 +553,10 @@ public abstract class JavaPlugin extends PluginBase {
+      * @param clazz a class belonging to a plugin
+      * @return the plugin that provided the class
+      * @throws IllegalArgumentException if the class is not provided by a
+-     *     JavaPlugin
++     *                                  JavaPlugin
+      * @throws IllegalArgumentException if class is null
+-     * @throws IllegalStateException if called from the static initializer for
+-     *     given JavaPlugin
++     * @throws IllegalStateException    if called from the static initializer for
++     *                                  given JavaPlugin
+      */
+     public static JavaPlugin getProvidingPlugin(Class<?> clazz) {
+         Validate.notNull(clazz, "Null class cannot have a plugin");
+@@ -557,4 +570,40 @@ public abstract class JavaPlugin extends PluginBase {
+         }
+         return plugin;
+     }
++
++    // fdSpigot start
++    protected void configure() {
++    }
++
++    @Override
++    public final ProtectedBinder forwardedBinder() {
++        return binder();
++    }
++
++    protected final ProtectedBinder binder() {
++        if (binder == null) {
++            throw new IllegalStateException("Binder is only usable during configuration");
++        }
++        return binder;
++    }
++
++    @Override
++    public final void configure(Binder binder) {
++        final ProtectedBinder old = this.binder;
++        this.binder = ProtectedBinderImpl.current(binder);
++        try {
++            if (this.binder != null) {
++                configure();
++            } else {
++                binder.skipSources(ProtectedModule.class).addError(
++                        ProtectedModule.class.getSimpleName() +
++                                " must be installed with a " +
++                                ProtectedBinder.class.getSimpleName()
++                );
++            }
++        } finally {
++            this.binder = old;
++        }
++    }
++    // fdSpigot end
+ }
+-- 
+2.21.0.windows.1
+

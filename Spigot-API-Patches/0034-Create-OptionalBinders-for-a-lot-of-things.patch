@@ -1,0 +1,32 @@
+From ebefa0bd12a272e12d8603526a84d5f5f4d874b8 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 22:37:51 -0500
+Subject: [PATCH] Create OptionalBinders for a lot of things
+
+
+diff --git a/src/main/java/org/bukkit/ServerModule.java b/src/main/java/org/bukkit/ServerModule.java
+new file mode 100644
+index 00000000..e9cc8021
+--- /dev/null
++++ b/src/main/java/org/bukkit/ServerModule.java
+@@ -0,0 +1,17 @@
++package org.bukkit;
++
++import com.google.inject.multibindings.OptionalBinder;
++import me.fixeddev.inject.ProtectedModule;
++import org.bukkit.plugin.PluginManager;
++import org.bukkit.plugin.ServicesManager;
++import org.bukkit.scheduler.BukkitScheduler;
++
++public class ServerModule extends ProtectedModule {
++    @Override
++    protected void configure() {
++        OptionalBinder.newOptionalBinder(binder(), Server.class);
++        OptionalBinder.newOptionalBinder(binder(), PluginManager.class);
++        OptionalBinder.newOptionalBinder(binder(), BukkitScheduler.class);
++        OptionalBinder.newOptionalBinder(binder(), ServicesManager.class);
++    }
++}
+-- 
+2.21.0.windows.1
+

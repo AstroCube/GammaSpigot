@@ -1,0 +1,192 @@
+From 1516efae6a02dcdfdaec46b1722d34952916d121 Mon Sep 17 00:00:00 2001
+From: BuildTools <gilbertodamian14@gmail.com>
+Date: Mon, 9 Jul 2018 14:50:03 -0500
+Subject: [PATCH] Cook speed multiplier API for furnances
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+index 0e3f35a6..7af86cd4 100644
+--- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+@@ -1,24 +1,26 @@
+ package net.minecraft.server;
+ 
+ // CraftBukkit start
+-import java.util.List;
+ 
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+ import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.entity.HumanEntity;
+ import org.bukkit.event.inventory.FurnaceBurnEvent;
+ import org.bukkit.event.inventory.FurnaceSmeltEvent;
+-import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++
++import java.util.List;
+ // CraftBukkit end
+ 
+ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePlayerListBox, IWorldInventory {
+ 
+-    private static final int[] a = new int[] { 0};
+-    private static final int[] f = new int[] { 2, 1};
+-    private static final int[] g = new int[] { 1};
++    private static final int[] a = new int[]{0};
++    private static final int[] f = new int[]{2, 1};
++    private static final int[] g = new int[]{1};
+     private ItemStack[] items = new ItemStack[3];
+     public int burnTime;
+     private int ticksForCurrentFuel;
+     public int cookTime;
++    public double cookSpeedMultiplier = 1.0; // PaperSpigot - cook speed multiplier API
+     private int cookTimeTotal;
+     private String m;
+ 
+@@ -48,7 +50,8 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+     }
+     // CraftBukkit end
+ 
+-    public TileEntityFurnace() {}
++    public TileEntityFurnace() {
++    }
+ 
+     public int getSize() {
+         return this.items.length;
+@@ -141,6 +144,12 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+             this.m = nbttagcompound.getString("CustomName");
+         }
+ 
++        // PaperSpigot start - cook speed multiplier API
++        if (nbttagcompound.hasKey("CookSpeedMultiplier")) {
++            this.cookSpeedMultiplier = nbttagcompound.getDouble("CookSpeedMultiplier");
++        }
++        // PaperSpigot end - cook speed multiplier API
++
+     }
+ 
+     public void b(NBTTagCompound nbttagcompound) {
+@@ -148,6 +157,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+         nbttagcompound.setShort("BurnTime", (short) this.burnTime);
+         nbttagcompound.setShort("CookTime", (short) this.cookTime);
+         nbttagcompound.setShort("CookTimeTotal", (short) this.cookTimeTotal);
++        nbttagcompound.setDouble("CookSpeedMultiplier", this.cookSpeedMultiplier); // PaperSpigot - cook speed multiplier API
+         NBTTagList nbttaglist = new NBTTagList();
+ 
+         for (int i = 0; i < this.items.length; ++i) {
+@@ -185,7 +195,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+ 
+         // CraftBukkit - moved from below
+         if (this.isBurning() && this.canBurn()) {
+-            this.cookTime += elapsedTicks;
++            this.cookTime += (elapsedTicks * cookSpeedMultiplier);
+             if (this.cookTime >= this.cookTimeTotal) {
+                 this.cookTime = 0;
+                 this.cookTimeTotal = this.a(this.items[0]);
+@@ -360,9 +370,11 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+         return this.world.getTileEntity(this.position) != this ? false : entityhuman.e((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
+     }
+ 
+-    public void startOpen(EntityHuman entityhuman) {}
++    public void startOpen(EntityHuman entityhuman) {
++    }
+ 
+-    public void closeContainer(EntityHuman entityhuman) {}
++    public void closeContainer(EntityHuman entityhuman) {
++    }
+ 
+     public boolean b(int i, ItemStack itemstack) {
+         return i == 2 ? false : (i != 1 ? true : isFuel(itemstack) || SlotFurnaceFuel.c_(itemstack));
+@@ -398,39 +410,39 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+ 
+     public int getProperty(int i) {
+         switch (i) {
+-        case 0:
+-            return this.burnTime;
++            case 0:
++                return this.burnTime;
+ 
+-        case 1:
+-            return this.ticksForCurrentFuel;
++            case 1:
++                return this.ticksForCurrentFuel;
+ 
+-        case 2:
+-            return this.cookTime;
++            case 2:
++                return this.cookTime;
+ 
+-        case 3:
+-            return this.cookTimeTotal;
++            case 3:
++                return this.cookTimeTotal;
+ 
+-        default:
+-            return 0;
++            default:
++                return 0;
+         }
+     }
+ 
+     public void b(int i, int j) {
+         switch (i) {
+-        case 0:
+-            this.burnTime = j;
+-            break;
++            case 0:
++                this.burnTime = j;
++                break;
+ 
+-        case 1:
+-            this.ticksForCurrentFuel = j;
+-            break;
++            case 1:
++                this.ticksForCurrentFuel = j;
++                break;
+ 
+-        case 2:
+-            this.cookTime = j;
+-            break;
++            case 2:
++                this.cookTime = j;
++                break;
+ 
+-        case 3:
+-            this.cookTimeTotal = j;
++            case 3:
++                this.cookTimeTotal = j;
+         }
+ 
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java b/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
+index e58aabca..68775b21 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftFurnace.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.block;
+ 
++import com.google.common.base.Preconditions;
+ import net.minecraft.server.TileEntityFurnace;
+ import org.bukkit.Material;
+ import org.bukkit.block.Block;
+@@ -37,6 +38,20 @@ public class CraftFurnace extends CraftBlockState implements Furnace {
+         return result;
+     }
+ 
++    // PaperSpigot start - furnace cook speed multiplier
++    @Override
++    public double getCookSpeedMultiplier() throws IllegalArgumentException {
++        return furnace.cookSpeedMultiplier;
++    }
++
++    @Override
++    public void setCookSpeedMultiplier(double multiplier) {
++        Preconditions.checkArgument(multiplier >= 0, "Furnace speed multiplier cannot be negative");
++        Preconditions.checkArgument(multiplier <= 100, "Furnace speed multiplier cannot more than 100");
++        furnace.cookSpeedMultiplier = multiplier;
++    }
++    // PaperSpigot end
++
+     public short getBurnTime() {
+         return (short) furnace.burnTime;
+     }
+-- 
+2.21.0.windows.1
+

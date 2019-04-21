@@ -1,0 +1,35 @@
+From fd9cac342d305a684bad56b9e80e209d17ce3e9f Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:25:24 -0500
+Subject: [PATCH] This doesn't need to be public
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftModule.java b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+index 82cf8075..22b72c8b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+@@ -14,7 +14,7 @@ public class CraftModule extends ProtectedModule {
+     private CraftScheduler scheduler;
+     private ServicesManager servicesManager;
+ 
+-    public CraftModule(CraftServer server, PluginManager pluginManager, CraftScheduler scheduler, ServicesManager servicesManager) {
++    CraftModule(CraftServer server, PluginManager pluginManager, CraftScheduler scheduler, ServicesManager servicesManager) {
+         this.server = server;
+         this.pluginManager = pluginManager;
+         this.scheduler = scheduler;
+diff --git a/src/main/java/org/bukkit/craftbukkit/PluginModule.java b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+index efd30404..684bdec4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/PluginModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+@@ -7,7 +7,7 @@ public class PluginModule extends ProtectedModule {
+ 
+     private Plugin[] plugins;
+ 
+-    public PluginModule(Plugin[] plugins) {
++    PluginModule(Plugin[] plugins) {
+         this.plugins = plugins;
+     }
+ 
+-- 
+2.21.0.windows.1
+

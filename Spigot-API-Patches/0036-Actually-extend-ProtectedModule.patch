@@ -1,0 +1,29 @@
+From 5bad053526af2f3300777334b93e0fe7f30df189 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:14:10 -0500
+Subject: [PATCH] Actually extend ProtectedModule
+
+
+diff --git a/src/main/java/org/bukkit/plugin/PluginBase.java b/src/main/java/org/bukkit/plugin/PluginBase.java
+index 6031af11..640d99a1 100644
+--- a/src/main/java/org/bukkit/plugin/PluginBase.java
++++ b/src/main/java/org/bukkit/plugin/PluginBase.java
+@@ -1,12 +1,14 @@
+ package org.bukkit.plugin;
+ 
++import me.fixeddev.inject.ProtectedModule;
++
+ /**
+  * Represents a base {@link Plugin}
+  * <p>
+  * Extend this class if your plugin is not a {@link
+  * org.bukkit.plugin.java.JavaPlugin}
+  */
+-public abstract class PluginBase implements Plugin {
++public abstract class PluginBase extends ProtectedModule implements Plugin {
+     @Override
+     public final int hashCode() {
+         return getName().hashCode();
+-- 
+2.21.0.windows.1
+

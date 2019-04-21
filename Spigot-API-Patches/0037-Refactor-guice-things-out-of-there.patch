@@ -1,0 +1,87 @@
+From c907099440340dd4b50e466adbca4bf7d9d7e885 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:14:38 -0500
+Subject: [PATCH] Refactor guice things out of there
+
+
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+index 542fc49f..58145f20 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPlugin.java
+@@ -15,12 +15,6 @@ import java.util.List;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+ 
+-import com.google.inject.Binder;
+-import com.google.inject.Module;
+-import me.fixeddev.inject.ForwardingProtectedBinder;
+-import me.fixeddev.inject.ProtectedBinder;
+-import me.fixeddev.inject.ProtectedBinderImpl;
+-import me.fixeddev.inject.ProtectedModule;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.Server;
+ import org.bukkit.Warning.WarningState;
+@@ -50,7 +44,7 @@ import com.google.common.io.ByteStreams;
+ /**
+  * Represents a Java plugin
+  */
+-public abstract class JavaPlugin extends PluginBase implements Module, ForwardingProtectedBinder {
++public abstract class JavaPlugin extends PluginBase {
+     private boolean isEnabled = false;
+     private PluginLoader loader = null;
+     private Server server = null;
+@@ -64,10 +58,6 @@ public abstract class JavaPlugin extends PluginBase implements Module, Forwardin
+     private File configFile = null;
+     private PluginLogger logger = null;
+ 
+-    // fdSpigot start
+-    private ProtectedBinder binder;
+-    // fdSpigot end
+-
+     public JavaPlugin() {
+         final ClassLoader classLoader = this.getClass().getClassLoader();
+         if (!(classLoader instanceof PluginClassLoader)) {
+@@ -570,40 +560,4 @@ public abstract class JavaPlugin extends PluginBase implements Module, Forwardin
+         }
+         return plugin;
+     }
+-
+-    // fdSpigot start
+-    protected void configure() {
+-    }
+-
+-    @Override
+-    public final ProtectedBinder forwardedBinder() {
+-        return binder();
+-    }
+-
+-    protected final ProtectedBinder binder() {
+-        if (binder == null) {
+-            throw new IllegalStateException("Binder is only usable during configuration");
+-        }
+-        return binder;
+-    }
+-
+-    @Override
+-    public final void configure(Binder binder) {
+-        final ProtectedBinder old = this.binder;
+-        this.binder = ProtectedBinderImpl.current(binder);
+-        try {
+-            if (this.binder != null) {
+-                configure();
+-            } else {
+-                binder.skipSources(ProtectedModule.class).addError(
+-                        ProtectedModule.class.getSimpleName() +
+-                                " must be installed with a " +
+-                                ProtectedBinder.class.getSimpleName()
+-                );
+-            }
+-        } finally {
+-            this.binder = old;
+-        }
+-    }
+-    // fdSpigot end
+ }
+-- 
+2.21.0.windows.1
+

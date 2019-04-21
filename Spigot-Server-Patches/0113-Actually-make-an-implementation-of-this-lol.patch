@@ -1,0 +1,25 @@
+From c371ec293f20e4a6f3d2719b307b13244faf79b3 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:24:46 -0500
+Subject: [PATCH] Actually make an implementation of this lol
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/PluginModule.java b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+index 89e9877a..efd30404 100644
+--- a/src/main/java/org/bukkit/craftbukkit/PluginModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+@@ -13,6 +13,10 @@ public class PluginModule extends ProtectedModule {
+ 
+     @Override
+     protected void configure() {
+-        super.configure();
++        for (Plugin plugin : plugins) {
++            install(plugin);
++
++            requestInjection(plugin);
++        }
+     }
+ }
+-- 
+2.21.0.windows.1
+
