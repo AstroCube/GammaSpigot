@@ -1,0 +1,34 @@
+From be94b2bf7087e6f861ace7a377416d4df6d64b3d Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 01:38:39 -0500
+Subject: [PATCH] Created method getTask You should use CraftTask#getTask
+ instead of CraftTask.task
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
+index 6c00576e..99e46fbe 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
++++ b/src/main/java/org/bukkit/craftbukkit/scheduler/CraftTask.java
+@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
+ import org.bukkit.scheduler.BukkitTask;
+ 
+ 
+-class CraftTask implements BukkitTask, Runnable {
++public class CraftTask implements BukkitTask, Runnable {
+ 
+     private volatile CraftTask next = null;
+     public static final int ERROR = 0;
+@@ -46,6 +46,10 @@ class CraftTask implements BukkitTask, Runnable {
+         return id;
+     }
+ 
++    public final Runnable getTask() {
++        return task;
++    }
++
+     public final Plugin getOwner() {
+         return plugin;
+     }
+-- 
+2.21.0.windows.1
+

@@ -1,0 +1,277 @@
+From ecc4017510ccbc742e050560ba64005c445b12e5 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:19:51 -0500
+Subject: [PATCH] Implement Server#getInjector Also register the basic modules
+ of the server like PluginModule, ServerModule, CraftModule
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 69485fa6..a573b556 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
+ 
+ import javax.imageio.ImageIO;
+ 
++import com.google.inject.Guice;
++import com.google.inject.Injector;
++import com.google.inject.Stage;
+ import net.minecraft.server.*;
+ 
+ import org.bukkit.BanList;
+@@ -32,6 +35,7 @@ import org.bukkit.GameMode;
+ import org.bukkit.Location;
+ import org.bukkit.OfflinePlayer;
+ import org.bukkit.Server;
++import org.bukkit.ServerModule;
+ import org.bukkit.UnsafeValues;
+ import org.bukkit.Warning.WarningState;
+ import org.bukkit.World;
+@@ -166,6 +170,8 @@ public final class CraftServer implements Server {
+     private final List<CraftPlayer> playerView;
+     public int reloadCount;
+ 
++    private Injector injector; // fdSpigot
++
+     private final class BooleanWrapper {
+         private boolean value = true;
+     }
+@@ -254,6 +260,8 @@ public final class CraftServer implements Server {
+         // loadPlugins();
+         // enablePlugins(PluginLoadOrder.STARTUP);
+         // Spigot End
++
++        injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(this.getPluginManager().getPlugins()));
+     }
+ 
+     public boolean getCommandBlockOverride(String command) {
+@@ -343,7 +351,7 @@ public final class CraftServer implements Server {
+         for (ICommand cmd : commands.values()) {
+             // Spigot start
+             VanillaCommandWrapper wrapper = new VanillaCommandWrapper((CommandAbstract) cmd, LocaleI18n.get(cmd.getUsage(null)));
+-            if (org.spigotmc.SpigotConfig.replaceCommands.contains( wrapper.getName() ) ) {
++            if (org.spigotmc.SpigotConfig.replaceCommands.contains(wrapper.getName())) {
+                 if (first) {
+                     commandMap.register("minecraft", wrapper);
+                 }
+@@ -445,6 +453,11 @@ public final class CraftServer implements Server {
+         return null;
+     }
+ 
++    @Override
++    public Injector getInjector() {
++        return null;
++    }
++
+     @Override
+     public int broadcastMessage(String message) {
+         return broadcast(message, BROADCAST_CHANNEL_USERS);
+@@ -617,7 +630,7 @@ public final class CraftServer implements Server {
+     // NOTE: Should only be called from DedicatedServer.ah()
+     public boolean dispatchServerCommand(CommandSender sender, ServerCommand serverCommand) {
+         if (sender instanceof Conversable) {
+-            Conversable conversable = (Conversable)sender;
++            Conversable conversable = (Conversable) sender;
+ 
+             if (conversable.isConversing()) {
+                 conversable.acceptConversationInput(serverCommand.command);
+@@ -746,7 +759,8 @@ public final class CraftServer implements Server {
+         while (pollCount < 50 && getScheduler().getActiveWorkers().size() > 0) {
+             try {
+                 Thread.sleep(50);
+-            } catch (InterruptedException e) {}
++            } catch (InterruptedException e) {
++            }
+             pollCount++;
+         }
+ 
+@@ -758,10 +772,10 @@ public final class CraftServer implements Server {
+                 author = plugin.getDescription().getAuthors().get(0);
+             }
+             getLogger().log(Level.SEVERE, String.format(
+-                "Nag author: '%s' of '%s' about the following: %s",
+-                author,
+-                plugin.getDescription().getName(),
+-                "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
++                    "Nag author: '%s' of '%s' about the following: %s",
++                    author,
++                    plugin.getDescription().getName(),
++                    "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
+             ));
+         }
+         loadPlugins();
+@@ -781,7 +795,7 @@ public final class CraftServer implements Server {
+         }
+     }
+ 
+-    @SuppressWarnings({ "unchecked", "finally" })
++    @SuppressWarnings({"unchecked", "finally"})
+     private void loadCustomPermissions() {
+         File file = new File(configuration.getString("settings.permissions-file"));
+         FileInputStream stream;
+@@ -809,7 +823,8 @@ public final class CraftServer implements Server {
+         } finally {
+             try {
+                 stream.close();
+-            } catch (IOException ex) {}
++            } catch (IOException ex) {
++            }
+         }
+ 
+         if (perms == null) {
+@@ -878,7 +893,8 @@ public final class CraftServer implements Server {
+             converter.convert(name, new IProgressUpdate() {
+                 private long b = System.currentTimeMillis();
+ 
+-                public void a(String s) {}
++                public void a(String s) {
++                }
+ 
+                 public void a(int i) {
+                     if (System.currentTimeMillis() - this.b >= 1000L) {
+@@ -888,7 +904,8 @@ public final class CraftServer implements Server {
+ 
+                 }
+ 
+-                public void c(String s) {}
++                public void c(String s) {
++                }
+             });
+         }
+ 
+@@ -902,7 +919,7 @@ public final class CraftServer implements Server {
+                     break;
+                 }
+             }
+-        } while(used);
++        } while (used);
+         boolean hardcore = false;
+ 
+         IDataManager sdm = new ServerNBTManager(getWorldContainer(), name, true);
+@@ -1012,7 +1029,7 @@ public final class CraftServer implements Server {
+         synchronized (RegionFileCache.class) {
+             // RegionFileCache.a should be RegionFileCache.cache
+             Iterator<Map.Entry<File, RegionFile>> i = RegionFileCache.a.entrySet().iterator();
+-            while(i.hasNext()) {
++            while (i.hasNext()) {
+                 Map.Entry<File, RegionFile> entry = i.next();
+                 File child = entry.getKey().getAbsoluteFile();
+                 while (child != null) {
+@@ -1331,16 +1348,15 @@ public final class CraftServer implements Server {
+     @Deprecated
+     public OfflinePlayer getOfflinePlayer(String name) {
+         Validate.notNull(name, "Name cannot be null");
+-        com.google.common.base.Preconditions.checkArgument( !org.apache.commons.lang.StringUtils.isBlank( name ), "Name cannot be blank" ); // Spigot
++        com.google.common.base.Preconditions.checkArgument(!org.apache.commons.lang.StringUtils.isBlank(name), "Name cannot be blank"); // Spigot
+ 
+         OfflinePlayer result = getPlayerExact(name);
+         if (result == null) {
+             // Spigot Start
+             GameProfile profile = null;
+             // Only fetch an online UUID in online mode
+-            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee )
+-            {
+-                profile = MinecraftServer.getServer().getUserCache().getProfile( name );
++            if (MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee) {
++                profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+             }
+             // Spigot end
+             if (profile == null) {
+@@ -1407,7 +1423,7 @@ public final class CraftServer implements Server {
+ 
+         for (JsonListEntry entry : playerList.getProfileBans().getValues()) {
+             result.add(getOfflinePlayer((GameProfile) entry.getKey()));
+-        }        
++        }
+ 
+         return result;
+     }
+@@ -1416,12 +1432,12 @@ public final class CraftServer implements Server {
+     public BanList getBanList(BanList.Type type) {
+         Validate.notNull(type, "Type cannot be null");
+ 
+-        switch(type){
+-        case IP:
+-            return new CraftIpBanList(playerList.getIPBans());
+-        case NAME:
+-        default:
+-            return new CraftProfileBanList(playerList.getProfileBans());
++        switch (type) {
++            case IP:
++                return new CraftIpBanList(playerList.getIPBans());
++            case NAME:
++            default:
++                return new CraftProfileBanList(playerList.getProfileBans());
+         }
+     }
+ 
+@@ -1646,8 +1662,7 @@ public final class CraftServer implements Server {
+      */
+     public List<String> tabCompleteCommand(Player player, String message, BlockPosition blockPosition) {
+         // Spigot Start
+-        if ( (org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains( " " ) )
+-        {
++        if ((org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains(" ")) {
+             return ImmutableList.of();
+         }
+         // Spigot End
+@@ -1767,13 +1782,12 @@ public final class CraftServer implements Server {
+         return CraftMagicNumbers.INSTANCE;
+     }
+ 
+-    private final Spigot spigot = new Spigot()
+-    {
++    private final Spigot spigot = new Spigot() {
+ 
+         // PaperSpigot start - Add getTPS (Further improve tick loop)
+         @Override
+         public double[] getTPS() {
+-            return new double[] {
++            return new double[]{
+                     MinecraftServer.getServer().tps1.getAverage(),
+                     MinecraftServer.getServer().tps5.getAverage(),
+                     MinecraftServer.getServer().tps15.getAverage()
+@@ -1783,26 +1797,22 @@ public final class CraftServer implements Server {
+ 
+         @Deprecated
+         @Override
+-        public YamlConfiguration getConfig()
+-        {
++        public YamlConfiguration getConfig() {
+             return getBukkitConfig();
+         }
+ 
+         @Override
+-        public YamlConfiguration getBukkitConfig()
+-        {
++        public YamlConfiguration getBukkitConfig() {
+             return configuration;
+         }
+ 
+         @Override
+-        public YamlConfiguration getSpigotConfig()
+-        {
++        public YamlConfiguration getSpigotConfig() {
+             return org.spigotmc.SpigotConfig.config;
+         }
+ 
+         @Override
+-        public YamlConfiguration getPaperSpigotConfig()
+-        {
++        public YamlConfiguration getPaperSpigotConfig() {
+             return org.github.paperspigot.PaperSpigotConfig.config;
+         }
+ 
+@@ -1826,8 +1836,7 @@ public final class CraftServer implements Server {
+         }
+     };
+ 
+-    public Spigot spigot()
+-    {
++    public Spigot spigot() {
+         return spigot;
+     }
+ }
+-- 
+2.21.0.windows.1
+

@@ -1,0 +1,36 @@
+From 014be95da2fce8c5bed7dea9267bc3aab481f915 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 01:32:39 -0500
+Subject: [PATCH] Modified Guice version The version of guice was changed to
+ allow guava 17 work altogether with this
+
+
+diff --git a/pom.xml b/pom.xml
+index e6f9bfd5..97e40566 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -84,15 +84,16 @@
+         <dependency>
+             <groupId>com.google.inject</groupId>
+             <artifactId>guice</artifactId>
+-            <version>4.2.2</version>
++            <version>4.0</version>
+             <scope>compile</scope>
+         </dependency>
+-
+         <dependency>
+-            <groupId>com.google.inject</groupId>
+-            <artifactId>guice</artifactId>
+-            <version>4.2.2</version>
++            <groupId>com.google.inject.extensions</groupId>
++            <artifactId>guice-multibindings</artifactId>
++            <version>4.0</version>
++            <scope>compile</scope>
+         </dependency>
++
+         <dependency>
+             <groupId>org.avaje</groupId>
+             <artifactId>ebean</artifactId>
+-- 
+2.21.0.windows.1
+

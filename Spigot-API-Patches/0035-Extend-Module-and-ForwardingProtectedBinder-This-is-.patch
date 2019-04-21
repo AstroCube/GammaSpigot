@@ -1,0 +1,32 @@
+From 1fbc195ec82ecc25973ca1a8ce65e42fa5802004 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sat, 20 Apr 2019 23:13:56 -0500
+Subject: [PATCH] Extend Module and ForwardingProtectedBinder This is basically
+ the interfaces that ProtectedModule implements
+
+
+diff --git a/src/main/java/org/bukkit/plugin/Plugin.java b/src/main/java/org/bukkit/plugin/Plugin.java
+index 7bdc809c..48a2c01a 100644
+--- a/src/main/java/org/bukkit/plugin/Plugin.java
++++ b/src/main/java/org/bukkit/plugin/Plugin.java
+@@ -4,6 +4,8 @@ import java.io.File;
+ import java.io.InputStream;
+ import java.util.logging.Logger;
+ 
++import com.google.inject.Module;
++import me.fixeddev.inject.ForwardingProtectedBinder;
+ import org.bukkit.Server;
+ import org.bukkit.command.TabExecutor;
+ import org.bukkit.configuration.file.FileConfiguration;
+@@ -16,7 +18,7 @@ import com.avaje.ebean.EbeanServer;
+  * <p>
+  * The use of {@link PluginBase} is recommended for actual Implementation
+  */
+-public interface Plugin extends TabExecutor {
++public interface Plugin extends TabExecutor, Module, ForwardingProtectedBinder {
+     /**
+      * Returns the folder that the plugin data's files are located in. The
+      * folder may not yet exist.
+-- 
+2.21.0.windows.1
+
