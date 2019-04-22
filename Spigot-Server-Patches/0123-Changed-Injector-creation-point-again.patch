@@ -1,0 +1,34 @@
+From cc59ed97cbec10153434bd2931b10dab11b46bfa Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 21 Apr 2019 19:15:06 -0500
+Subject: [PATCH] Changed Injector creation point again The injector was being
+ created before the plugins were even loaded, now it's created just after that
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 12c985db..66a32165 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -294,15 +294,16 @@ public final class CraftServer implements Server {
+     }
+ 
+     public void loadPlugins() {
+-		// Here we create the Guice injector
+-        injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(this.getPluginManager().getPlugins()));
+-
+         pluginManager.registerInterface(JavaPluginLoader.class);
+ 
+         File pluginFolder = (File) console.options.valueOf("plugins");
+ 
+         if (pluginFolder.exists()) {
+             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
++
++            // Here we create the Guice injector
++            injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(this.getPluginManager().getPlugins()));
++
+             for (Plugin plugin : plugins) {
+                 try {
+                     String message = String.format("Loading %s", plugin.getDescription().getFullName());
+-- 
+2.21.0.windows.1
+
