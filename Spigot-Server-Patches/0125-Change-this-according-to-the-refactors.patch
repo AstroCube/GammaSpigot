@@ -1,0 +1,97 @@
+From d15b2e6dd18b304677713525823109cfbe765d4c Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 23 Apr 2019 01:43:19 -0500
+Subject: [PATCH] Change this according to the refactors
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftModule.java b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+index 75e7a980..4d904646 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftModule.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftModule.java
+@@ -2,10 +2,12 @@ package org.bukkit.craftbukkit;
+ 
+ import com.google.inject.AbstractModule;
+ import com.google.inject.multibindings.OptionalBinder;
+-import me.fixeddev.inject.ProtectedModule;
++import me.fixeddev.inject.ProtectedBinder;
+ import org.bukkit.Server;
+ import org.bukkit.craftbukkit.scheduler.CraftScheduler;
++import org.bukkit.plugin.Plugin;
+ import org.bukkit.plugin.PluginManager;
++import org.bukkit.plugin.PluginModule;
+ import org.bukkit.plugin.ServicesManager;
+ import org.bukkit.scheduler.BukkitScheduler;
+ 
+@@ -15,11 +17,15 @@ public class CraftModule extends AbstractModule {
+     private CraftScheduler scheduler;
+     private ServicesManager servicesManager;
+ 
+-    CraftModule(CraftServer server, PluginManager pluginManager, CraftScheduler scheduler, ServicesManager servicesManager) {
++    private Plugin[] plugins;
++
++    CraftModule(CraftServer server, PluginManager pluginManager, CraftScheduler scheduler, ServicesManager servicesManager, Plugin[] plugins) {
+         this.server = server;
+         this.pluginManager = pluginManager;
+         this.scheduler = scheduler;
+         this.servicesManager = servicesManager;
++
++        this.plugins = plugins;
+     }
+ 
+     @Override
+@@ -28,5 +34,10 @@ public class CraftModule extends AbstractModule {
+         OptionalBinder.newOptionalBinder(binder(), PluginManager.class).setBinding().toInstance(pluginManager);
+         OptionalBinder.newOptionalBinder(binder(), BukkitScheduler.class).setBinding().toInstance(scheduler);
+         OptionalBinder.newOptionalBinder(binder(), ServicesManager.class).setBinding().toInstance(servicesManager);
++
++        for (Plugin plugin : plugins) {
++            ProtectedBinder.newProtectedBinder(binder()).install(new PluginModule(plugin));
++        }
++
+     }
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index b77b2153..d24c5614 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -302,7 +302,7 @@ public final class CraftServer implements Server {
+             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
+ 
+             // Here we create the Guice injector
+-            injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(plugins));
++            injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager(), plugins));
+ 
+             for (Plugin plugin : plugins) {
+                 try {
+diff --git a/src/main/java/org/bukkit/craftbukkit/PluginModule.java b/src/main/java/org/bukkit/craftbukkit/PluginModule.java
+deleted file mode 100644
+index 23fce15b..00000000
+--- a/src/main/java/org/bukkit/craftbukkit/PluginModule.java
++++ /dev/null
+@@ -1,23 +0,0 @@
+-package org.bukkit.craftbukkit;
+-
+-import com.google.inject.AbstractModule;
+-import me.fixeddev.inject.ProtectedBinder;
+-import org.bukkit.plugin.Plugin;
+-
+-public class PluginModule extends AbstractModule {
+-
+-    private Plugin[] plugins;
+-
+-    PluginModule(Plugin[] plugins) {
+-        this.plugins = plugins;
+-    }
+-
+-    @Override
+-    protected void configure() {
+-        for (Plugin plugin : plugins) {
+-            ProtectedBinder.newProtectedBinder(binder()).install(plugin);
+-
+-            requestInjection(plugin);
+-        }
+-    }
+-}
+-- 
+2.21.0.windows.1
+
