@@ -1,0 +1,25 @@
+From b3d298be6feb6c5013834f955cfa3746c5e34896 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 23 Apr 2019 01:52:57 -0500
+Subject: [PATCH] Whoops
+
+
+diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+index f7e073f3..6cd7327a 100644
+--- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+@@ -68,9 +68,9 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
+                 throw new InvalidPluginException("Cannot find main class `" + description.getMain() + "'", ex);
+             }
+ 
+-            if(jarClass.isAssignableFrom(JavaPlugin.class)){
++            if(JavaPlugin.class.isAssignableFrom(jarClass)){
+                 plugin = jarClass.asSubclass(JavaPlugin.class).newInstance();
+-            } else if (jarClass.isAssignableFrom(Module.class)){
++            } else if (Module.class.isAssignableFrom(jarClass)){
+                 plugin = new ModuleJavaPlugin(jarClass.asSubclass(Module.class).newInstance());
+             } else {
+                 throw new InvalidPluginException("main class `" + description.getMain() + "' does not extend JavaPlugin or Module");
+-- 
+2.21.0.windows.1
+
