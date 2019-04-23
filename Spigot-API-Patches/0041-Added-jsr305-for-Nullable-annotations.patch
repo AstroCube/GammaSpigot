@@ -1,0 +1,26 @@
+From 1765a217172c39f00cf813c5bb41db7e5770e04b Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Mon, 22 Apr 2019 16:23:32 -0500
+Subject: [PATCH] Added jsr305 for @Nullable annotations
+
+
+diff --git a/pom.xml b/pom.xml
+index 97e40566..2992d1dd 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -114,6 +114,12 @@
+             <scope>compile</scope>
+         </dependency>
+ 
++        <dependency>
++            <groupId>com.google.code.findbugs</groupId>
++            <artifactId>jsr305</artifactId>
++            <version>3.0.2</version>
++        </dependency>
++
+         <!-- testing -->
+         <dependency>
+             <groupId>junit</groupId>
+-- 
+2.21.0.windows.1
+
