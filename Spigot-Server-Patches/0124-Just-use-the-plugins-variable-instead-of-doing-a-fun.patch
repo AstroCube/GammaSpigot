@@ -1,0 +1,23 @@
+From 579e19f0d5af0adb2bfe2c65c9a0d3e3ba663a9b Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Mon, 22 Apr 2019 19:49:30 -0500
+Subject: [PATCH] Just use the plugins variable instead of doing a function
+ call again
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 66a32165..b77b2153 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -302,7 +302,7 @@ public final class CraftServer implements Server {
+             Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
+ 
+             // Here we create the Guice injector
+-            injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(this.getPluginManager().getPlugins()));
++            injector = Guice.createInjector(Stage.PRODUCTION, new ServerModule(), new CraftModule(this, getPluginManager(), getScheduler(), getServicesManager()), new PluginModule(plugins));
+ 
+             for (Plugin plugin : plugins) {
+                 try {
+-- 
+2.21.0.windows.1
+
