@@ -1,0 +1,39 @@
+From b6fa89f24a5c838d2f834e9bbd0de81cb834962e Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Mon, 22 Apr 2019 16:25:41 -0500
+Subject: [PATCH] Added disguise api
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index d02fe560..f5d16bbb 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -21,6 +21,8 @@ import org.bukkit.plugin.messaging.PluginMessageRecipient;
+ import org.bukkit.scoreboard.Scoreboard;
+ // PaperSpigot start
+ import org.github.paperspigot.Title;
++
++import javax.annotation.Nullable;
+ // PaperSpigot end
+ 
+ /**
+@@ -1199,6 +1201,16 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+     // Paper - Undeprecate
+     public void resetTitle();
+ 
++    public void setDisguisedName(@Nullable String disguisedName);
++    @Nullable
++    public String getDisguisedName();
++
++    public void setDisguisedSkin(@Nullable String base64Skin);
++    @Nullable
++    public String getDisguisedSkin();
++
++    public boolean isDisguised();
++
+     // Spigot start
+     public class Spigot extends Entity.Spigot
+     {
+-- 
+2.21.0.windows.1
+
