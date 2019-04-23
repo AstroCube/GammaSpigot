@@ -1,0 +1,145 @@
+From 5039881a12a13c24624c2adc9bc588f4f64c436b Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 23 Apr 2019 01:41:19 -0500
+Subject: [PATCH] Refactor everything related with Dependency Injection Almost
+ everything about the plugins being injected was changed, because the other
+ approach didn't really work well This is an approach more like OCTC but with
+ little changes
+
+
+diff --git a/src/main/java/org/bukkit/plugin/Plugin.java b/src/main/java/org/bukkit/plugin/Plugin.java
+index 48a2c01a..ba8dffad 100644
+--- a/src/main/java/org/bukkit/plugin/Plugin.java
++++ b/src/main/java/org/bukkit/plugin/Plugin.java
+@@ -6,6 +6,7 @@ import java.util.logging.Logger;
+ 
+ import com.google.inject.Module;
+ import me.fixeddev.inject.ForwardingProtectedBinder;
++import me.fixeddev.inject.ProtectedBinder;
+ import org.bukkit.Server;
+ import org.bukkit.command.TabExecutor;
+ import org.bukkit.configuration.file.FileConfiguration;
+@@ -18,7 +19,7 @@ import com.avaje.ebean.EbeanServer;
+  * <p>
+  * The use of {@link PluginBase} is recommended for actual Implementation
+  */
+-public interface Plugin extends TabExecutor, Module, ForwardingProtectedBinder {
++public interface Plugin extends TabExecutor {
+     /**
+      * Returns the folder that the plugin data's files are located in. The
+      * folder may not yet exist.
+@@ -188,4 +189,6 @@ public interface Plugin extends TabExecutor, Module, ForwardingProtectedBinder {
+      * @return name of the plugin
+      */
+     public String getName();
++
++    public default void configure(ProtectedBinder binder){}
+ }
+diff --git a/src/main/java/org/bukkit/plugin/PluginBase.java b/src/main/java/org/bukkit/plugin/PluginBase.java
+index 640d99a1..6031af11 100644
+--- a/src/main/java/org/bukkit/plugin/PluginBase.java
++++ b/src/main/java/org/bukkit/plugin/PluginBase.java
+@@ -1,14 +1,12 @@
+ package org.bukkit.plugin;
+ 
+-import me.fixeddev.inject.ProtectedModule;
+-
+ /**
+  * Represents a base {@link Plugin}
+  * <p>
+  * Extend this class if your plugin is not a {@link
+  * org.bukkit.plugin.java.JavaPlugin}
+  */
+-public abstract class PluginBase extends ProtectedModule implements Plugin {
++public abstract class PluginBase implements Plugin {
+     @Override
+     public final int hashCode() {
+         return getName().hashCode();
+diff --git a/src/main/java/org/bukkit/plugin/PluginModule.java b/src/main/java/org/bukkit/plugin/PluginModule.java
+new file mode 100644
+index 00000000..56bbb8e9
+--- /dev/null
++++ b/src/main/java/org/bukkit/plugin/PluginModule.java
+@@ -0,0 +1,24 @@
++package org.bukkit.plugin;
++
++import com.google.inject.Provides;
++import me.fixeddev.inject.ProtectedModule;
++
++public class PluginModule extends ProtectedModule {
++
++    private Plugin plugin;
++
++    public PluginModule(Plugin plugin) {
++        this.plugin = plugin;
++    }
++
++    @Override
++    public void configure() {
++        bind(Plugin.class).toInstance(plugin);
++        plugin.configure(binder());
++    }
++
++    @Provides
++    PluginLogger pluginLogger(Plugin plugin) {
++        return (PluginLogger) plugin.getLogger();
++    }
++}
+diff --git a/src/main/java/org/bukkit/plugin/java/ModuleJavaPlugin.java b/src/main/java/org/bukkit/plugin/java/ModuleJavaPlugin.java
+new file mode 100644
+index 00000000..fb19c2d1
+--- /dev/null
++++ b/src/main/java/org/bukkit/plugin/java/ModuleJavaPlugin.java
+@@ -0,0 +1,16 @@
++package org.bukkit.plugin.java;
++
++import com.google.inject.Module;
++import me.fixeddev.inject.ProtectedBinder;
++
++public class ModuleJavaPlugin extends JavaPlugin {
++    private Module module;
++
++    public ModuleJavaPlugin(Module module){
++        this.module = module;
++    }
++
++    public void configure(ProtectedBinder binder) {
++        binder.install(module);
++    }
++}
+diff --git a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+index b2cbf9e4..f7e073f3 100644
+--- a/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/PluginClassLoader.java
+@@ -8,6 +8,7 @@ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.Set;
+ 
++import com.google.inject.Module;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.plugin.InvalidPluginException;
+ import org.bukkit.plugin.PluginDescriptionFile;
+@@ -67,14 +68,13 @@ public final class PluginClassLoader extends URLClassLoader { // Spigot
+                 throw new InvalidPluginException("Cannot find main class `" + description.getMain() + "'", ex);
+             }
+ 
+-            Class<? extends JavaPlugin> pluginClass;
+-            try {
+-                pluginClass = jarClass.asSubclass(JavaPlugin.class);
+-            } catch (ClassCastException ex) {
+-                throw new InvalidPluginException("main class `" + description.getMain() + "' does not extend JavaPlugin", ex);
++            if(jarClass.isAssignableFrom(JavaPlugin.class)){
++                plugin = jarClass.asSubclass(JavaPlugin.class).newInstance();
++            } else if (jarClass.isAssignableFrom(Module.class)){
++                plugin = new ModuleJavaPlugin(jarClass.asSubclass(Module.class).newInstance());
++            } else {
++                throw new InvalidPluginException("main class `" + description.getMain() + "' does not extend JavaPlugin or Module");
+             }
+-
+-            plugin = pluginClass.newInstance();
+         } catch (IllegalAccessException ex) {
+             throw new InvalidPluginException("No public constructor", ex);
+         } catch (InstantiationException ex) {
+-- 
+2.21.0.windows.1
+
