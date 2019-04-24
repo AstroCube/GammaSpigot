@@ -1,4 +1,4 @@
-From 61c803866cbf481bd9bddadd297842b641ff518d Mon Sep 17 00:00:00 2001
+From c69a370ac7e5e03d46040bf88299a762636e9555 Mon Sep 17 00:00:00 2001
 From: Gilberto Garcia <gilbertodamian14@gmail.com>
 Date: Sun, 21 Apr 2019 01:32:39 -0500
 Subject: [PATCH] Modified Guice version The version of guice was changed to
