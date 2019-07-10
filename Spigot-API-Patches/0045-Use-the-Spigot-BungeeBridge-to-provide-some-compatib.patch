@@ -1,0 +1,38 @@
+From e066be07973e1173348244e067dfbfbca4558d45 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 9 Jul 2019 22:50:28 -0500
+Subject: [PATCH] Use the Spigot-BungeeBridge to provide some "compatibility"
+ The interfaces provided by this api will be in Spigot and bungee, so you can
+ use them safely from the two
+
+
+diff --git a/pom.xml b/pom.xml
+index 2992d1dd..a9f9aeaa 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -67,6 +67,14 @@
+             <type>jar</type>
+             <scope>compile</scope>
+         </dependency>
++
++        <dependency>
++            <groupId>me.fixeddev</groupId>
++            <artifactId>Spigot-BungeeBridge</artifactId>
++            <version>1.8-SNAPSHOT</version>
++            <scope>compile</scope>
++        </dependency>
++
+         <!-- bundled with Minecraft, should be kept in sync -->
+         <dependency>
+             <groupId>com.google.guava</groupId>
+@@ -79,6 +87,7 @@
+             <groupId>com.google.code.gson</groupId>
+             <artifactId>gson</artifactId>
+           <version>2.2.4</version>
++            <scope>compile</scope>
+         </dependency>
+ 
+         <dependency>
+-- 
+2.21.0.windows.1
+
