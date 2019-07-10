@@ -1,0 +1,44 @@
+From b24d064057b8efe1c2c12b1a6979308f46c95950 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 9 Jul 2019 22:54:12 -0500
+Subject: [PATCH] Extend the Spigot-Bungee Bridge interfaces
+
+
+diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
+index 148756b9..5e3a8cd4 100644
+--- a/src/main/java/org/bukkit/command/CommandSender.java
++++ b/src/main/java/org/bukkit/command/CommandSender.java
+@@ -3,7 +3,7 @@ package org.bukkit.command;
+ import org.bukkit.Server;
+ import org.bukkit.permissions.Permissible;
+ 
+-public interface CommandSender extends Permissible {
++public interface CommandSender extends Permissible, me.fixeddev.minecraft.CommandSender {
+ 
+     /**
+      * Sends this sender a message
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index f5d16bbb..72736362 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
+ /**
+  * Represents a player, connected or not
+  */
+-public interface Player extends HumanEntity, Conversable, CommandSender, OfflinePlayer, PluginMessageRecipient {
++public interface Player extends HumanEntity, Conversable, CommandSender, OfflinePlayer, PluginMessageRecipient, me.fixeddev.minecraft.player.Player {
+ 
+     /**
+      * Gets the "friendly" name to display of this player. This may include
+@@ -1271,7 +1271,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+         }
+ 
+         /**
+-         * Gets all players hidden with {@link hidePlayer(org.bukkit.entity.Player)}.
++         * Gets all players hidden with {@link Spigot#hidePlayer(org.bukkit.entity.Player)}.
+          *
+          * @return a Set with all hidden players
+          */
+-- 
+2.21.0.windows.1
+
