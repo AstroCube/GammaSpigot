@@ -1,0 +1,485 @@
+From c5b9472c2e70cc3f3dce1975609984199b93beba Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Tue, 9 Jul 2019 22:50:50 -0500
+Subject: [PATCH] This is now in the Spigot-BungeeBridge api
+
+
+diff --git a/src/main/java/me/fixeddev/inject/ForwardingBinder.java b/src/main/java/me/fixeddev/inject/ForwardingBinder.java
+deleted file mode 100644
+index ce5c527e..00000000
+--- a/src/main/java/me/fixeddev/inject/ForwardingBinder.java
++++ /dev/null
+@@ -1,181 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import java.lang.annotation.Annotation;
+-import java.lang.reflect.Method;
+-
+-import com.google.inject.Binder;
+-import com.google.inject.Binding;
+-import com.google.inject.Key;
+-import com.google.inject.MembersInjector;
+-import com.google.inject.Module;
+-import com.google.inject.PrivateBinder;
+-import com.google.inject.Provider;
+-import com.google.inject.Scope;
+-import com.google.inject.Stage;
+-import com.google.inject.TypeLiteral;
+-import com.google.inject.binder.AnnotatedBindingBuilder;
+-import com.google.inject.binder.AnnotatedConstantBindingBuilder;
+-import com.google.inject.binder.LinkedBindingBuilder;
+-import com.google.inject.matcher.Matcher;
+-import com.google.inject.spi.Dependency;
+-import com.google.inject.spi.Message;
+-import com.google.inject.spi.ModuleAnnotatedMethodScanner;
+-import com.google.inject.spi.ProvisionListener;
+-import com.google.inject.spi.TypeConverter;
+-import com.google.inject.spi.TypeListener;
+-import org.aopalliance.intercept.MethodInterceptor;
+-
+-public interface ForwardingBinder extends Binder {
+-
+-    Binder forwardedBinder();
+-
+-    @Override
+-    default void bindInterceptor(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, MethodInterceptor... interceptors) {
+-        forwardedBinder().bindInterceptor(classMatcher, methodMatcher, interceptors);
+-    }
+-
+-    @Override
+-    default void bindScope(Class<? extends Annotation> annotationType, Scope scope) {
+-        forwardedBinder().bindScope(annotationType, scope);
+-    }
+-
+-    @Override
+-    default <T> LinkedBindingBuilder<T> bind(Key<T> key) {
+-        return forwardedBinder().bind(key);
+-    }
+-
+-    @Override
+-    default <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral) {
+-        return forwardedBinder().bind(typeLiteral);
+-    }
+-
+-    @Override
+-    default <T> AnnotatedBindingBuilder<T> bind(Class<T> type) {
+-        return forwardedBinder().bind(type);
+-    }
+-
+-    @Override
+-    default AnnotatedConstantBindingBuilder bindConstant() {
+-        return forwardedBinder().bindConstant();
+-    }
+-
+-    @Override
+-    default <T> void requestInjection(TypeLiteral<T> type, T instance) {
+-        forwardedBinder().requestInjection(type, instance);
+-    }
+-
+-    @Override
+-    default void requestInjection(Object instance) {
+-        forwardedBinder().requestInjection(instance);
+-    }
+-
+-    @Override
+-    default void requestStaticInjection(Class<?>... types) {
+-        forwardedBinder().requestStaticInjection(types);
+-    }
+-
+-    @Override
+-    default void install(Module module) {
+-        forwardedBinder().install(module);
+-    }
+-
+-    @Override
+-    default Stage currentStage() {
+-        return forwardedBinder().currentStage();
+-    }
+-
+-    @Override
+-    default void addError(String message, Object... arguments) {
+-        forwardedBinder().addError(message, arguments);
+-    }
+-
+-    @Override
+-    default void addError(Throwable t) {
+-        forwardedBinder().addError(t);
+-    }
+-
+-    @Override
+-    default void addError(Message message) {
+-        forwardedBinder().addError(message);
+-    }
+-
+-    @Override
+-    default <T> Provider<T> getProvider(Key<T> key) {
+-        return forwardedBinder().getProvider(key);
+-    }
+-
+-    @Override
+-    default <T> Provider<T> getProvider(Dependency<T> dependency) {
+-        return forwardedBinder().getProvider(dependency);
+-    }
+-
+-    @Override
+-    default <T> Provider<T> getProvider(Class<T> type) {
+-        return forwardedBinder().getProvider(type);
+-    }
+-
+-    @Override
+-    default <T> MembersInjector<T> getMembersInjector(TypeLiteral<T> typeLiteral) {
+-        return forwardedBinder().getMembersInjector(typeLiteral);
+-    }
+-
+-    @Override
+-    default <T> MembersInjector<T> getMembersInjector(Class<T> type) {
+-        return forwardedBinder().getMembersInjector(type);
+-    }
+-
+-    @Override
+-    default void convertToTypes(Matcher<? super TypeLiteral<?>> typeMatcher, TypeConverter converter) {
+-        forwardedBinder().convertToTypes(typeMatcher, converter);
+-    }
+-
+-    @Override
+-    default void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener) {
+-        forwardedBinder().bindListener(typeMatcher, listener);
+-    }
+-
+-    @Override
+-    default void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listeners) {
+-        forwardedBinder().bindListener(bindingMatcher, listeners);
+-    }
+-
+-    @Override
+-    default Binder withSource(Object source) {
+-        return forwardedBinder().withSource(source);
+-    }
+-
+-    @Override
+-    default Binder skipSources(Class... classesToSkip) {
+-        return forwardedBinder().skipSources(classesToSkip);
+-    }
+-
+-    @Override
+-    default PrivateBinder newPrivateBinder() {
+-        return forwardedBinder().newPrivateBinder();
+-    }
+-
+-    @Override
+-    default void requireExplicitBindings() {
+-        forwardedBinder().requireExplicitBindings();
+-    }
+-
+-    @Override
+-    default void disableCircularProxies() {
+-        forwardedBinder().disableCircularProxies();
+-    }
+-
+-    @Override
+-    default void requireAtInjectOnConstructors() {
+-        forwardedBinder().requireAtInjectOnConstructors();
+-    }
+-
+-    @Override
+-    default void requireExactBindingAnnotations() {
+-        forwardedBinder().requireExactBindingAnnotations();
+-    }
+-
+-    @Override
+-    default void scanModulesForAnnotatedMethods(ModuleAnnotatedMethodScanner scanner) {
+-        forwardedBinder().scanModulesForAnnotatedMethods(scanner);
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/ForwardingPrivateBinder.java b/src/main/java/me/fixeddev/inject/ForwardingPrivateBinder.java
+deleted file mode 100644
+index d34a7961..00000000
+--- a/src/main/java/me/fixeddev/inject/ForwardingPrivateBinder.java
++++ /dev/null
+@@ -1,36 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import com.google.inject.Key;
+-import com.google.inject.PrivateBinder;
+-import com.google.inject.TypeLiteral;
+-import com.google.inject.binder.AnnotatedElementBuilder;
+-
+-public interface ForwardingPrivateBinder extends ForwardingBinder, PrivateBinder {
+-
+-    PrivateBinder forwardedBinder();
+-
+-    @Override
+-    default void expose(Key<?> key) {
+-        forwardedBinder().expose(key);
+-    }
+-
+-    @Override
+-    default AnnotatedElementBuilder expose(Class<?> type) {
+-        return forwardedBinder().expose(type);
+-    }
+-
+-    @Override
+-    default AnnotatedElementBuilder expose(TypeLiteral<?> type) {
+-        return forwardedBinder().expose(type);
+-    }
+-
+-    @Override
+-    default PrivateBinder withSource(Object source) {
+-        return forwardedBinder().withSource(source);
+-    }
+-
+-    @Override
+-    default PrivateBinder skipSources(Class... classesToSkip) {
+-        return forwardedBinder().skipSources(classesToSkip);
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/ForwardingProtectedBinder.java b/src/main/java/me/fixeddev/inject/ForwardingProtectedBinder.java
+deleted file mode 100644
+index 7bb8510f..00000000
+--- a/src/main/java/me/fixeddev/inject/ForwardingProtectedBinder.java
++++ /dev/null
+@@ -1,24 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import com.google.inject.Binder;
+-
+-public interface ForwardingProtectedBinder extends ProtectedBinder, ForwardingPrivateBinder {
+-
+-    @Override
+-    ProtectedBinder forwardedBinder();
+-
+-    @Override
+-    default Binder publicBinder() {
+-        return forwardedBinder().publicBinder();
+-    }
+-
+-    @Override
+-    default ProtectedBinder withSource(Object source) {
+-        return forwardedBinder().withSource(source);
+-    }
+-
+-    @Override
+-    default ProtectedBinder skipSources(Class... classesToSkip) {
+-        return forwardedBinder().skipSources(classesToSkip);
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/ProtectedBinder.java b/src/main/java/me/fixeddev/inject/ProtectedBinder.java
+deleted file mode 100644
+index 43f10baf..00000000
+--- a/src/main/java/me/fixeddev/inject/ProtectedBinder.java
++++ /dev/null
+@@ -1,31 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import com.google.inject.Binder;
+-
+-/**
+- * A {@link com.google.inject.PrivateBinder} that provides direct access to the enclosing
+- * environment through {@link #publicBinder()}. This is the same environment that you create
+- * bindings in by calling {@link #expose}, but access to the binder itself offers more flexibility.
+- *
+- * {@link ProtectedBinder}s are created by calling {@link #newProtectedBinder(Binder)}.
+- *
+- * @see ProtectedModule
+- */
+-public interface ProtectedBinder extends ForwardingPrivateBinder {
+-
+-    Binder publicBinder();
+-
+-    default ProtectedBinder withSource(Object source) {
+-        return new ProtectedBinderImpl(publicBinder().withSource(source),
+-                forwardedBinder().withSource(source));
+-    }
+-
+-    default ProtectedBinder skipSources(Class... classesToSkip) {
+-        return new ProtectedBinderImpl(publicBinder().skipSources(classesToSkip),
+-                forwardedBinder().skipSources(classesToSkip));
+-    }
+-
+-    static ProtectedBinder newProtectedBinder(Binder parent) {
+-        return new ProtectedBinderImpl(parent, parent.newPrivateBinder());
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java b/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java
+deleted file mode 100644
+index 201b91a6..00000000
+--- a/src/main/java/me/fixeddev/inject/ProtectedBinderImpl.java
++++ /dev/null
+@@ -1,71 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import com.google.inject.Binder;
+-import com.google.inject.Module;
+-import com.google.inject.PrivateBinder;
+-
+-public class ProtectedBinderImpl implements ProtectedBinder {
+-
+-    private static Class[] SKIP = new Class[]{
+-            ForwardingBinder.class,
+-            ForwardingPrivateBinder.class,
+-            ForwardingProtectedBinder.class,
+-            ProtectedBinder.class,
+-            ProtectedBinderImpl.class,
+-            ProtectedModule.class
+-    };
+-
+-    private final Binder global;
+-    private final PrivateBinder local;
+-
+-    ProtectedBinderImpl(Binder global, PrivateBinder local) {
+-        this.global = global.skipSources(SKIP);
+-        this.local = (local instanceof ProtectedBinder ? ((ProtectedBinder) local).forwardedBinder() : local).skipSources(SKIP);
+-    }
+-
+-    @Override
+-    public PrivateBinder forwardedBinder() {
+-        return local;
+-    }
+-
+-    @Override
+-    public Binder publicBinder() {
+-        return global;
+-    }
+-
+-    /**
+-     * This hack is used to pass the current {@link ProtectedBinder} through Guice
+-     * when installing a {@link ProtectedModule}. Guice will pass its own {@link Binder}
+-     * to {@link ProtectedModule#configure(Binder)}, and we use this thread-local
+-     * to get the {@link ProtectedBinder} wrapping it.
+-     *
+-     * We could try and implement the install process ourselves, but then we would miss out
+-     * on Guice's module functionality, such as deduplication, error tracing, and so on.
+-     */
+-
+-    private static final ThreadLocal<ProtectedBinderImpl> CURRENT = new ThreadLocal<>();
+-
+-    @Override
+-    public void install(Module module) {
+-        final ProtectedBinderImpl prev = CURRENT.get();
+-        CURRENT.set(this);
+-        try {
+-            local.install(module);
+-        } finally {
+-            CURRENT.set(prev);
+-        }
+-    }
+-
+-    public static ProtectedBinder current(Binder binder) {
+-        if(binder instanceof ProtectedBinder) {
+-            return (ProtectedBinder) binder;
+-        }
+-
+-        final ProtectedBinderImpl current = ProtectedBinderImpl.CURRENT.get();
+-        if(current != null && current.local == binder) {
+-            return current;
+-        }
+-
+-        return null;
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/ProtectedModule.java b/src/main/java/me/fixeddev/inject/ProtectedModule.java
+deleted file mode 100644
+index 3a316c4b..00000000
+--- a/src/main/java/me/fixeddev/inject/ProtectedModule.java
++++ /dev/null
+@@ -1,80 +0,0 @@
+-package me.fixeddev.inject;
+-
+-import com.google.inject.Binder;
+-import com.google.inject.Module;
+-
+-/**
+- * A {@link Module} that uses a {@link ProtectedBinder}.
+- *
+- * This module must be installed through a {@link ProtectedBinder}, which must be created explicitly
+- * by calling {@link ProtectedBinder#newProtectedBinder(Binder)}. Attempting to install this module
+- * into a normal {@link Binder} fails with an error.
+- *
+- * Unlike {@link com.google.inject.PrivateModule}, installing this never creates a new {@link ProtectedBinder}
+- * automatically. This allows an entire tree of {@link ProtectedModule}s to share the same public binder.
+- *
+- * @see ProtectedBinder
+- */
+-public abstract class ProtectedModule implements Module, ForwardingProtectedBinder {
+-
+-    protected void configure() {}
+-
+-    private final Object moduleKey;
+-    private ProtectedBinder binder;
+-
+-    protected ProtectedModule(Object moduleKey) {
+-        this.moduleKey = moduleKey;
+-    }
+-
+-    protected ProtectedModule() {
+-        this(null);
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        return moduleKey != null ? moduleKey.hashCode()
+-                : super.hashCode();
+-    }
+-
+-    @Override
+-    public boolean equals(Object obj) {
+-        if(moduleKey != null) {
+-            return obj != null &&
+-                    getClass().equals(obj.getClass()) &&
+-                    moduleKey.equals(((ProtectedModule) obj).moduleKey);
+-        } else {
+-            return super.equals(obj);
+-        }
+-    }
+-
+-    @Override
+-    public final ProtectedBinder forwardedBinder() {
+-        return binder();
+-    }
+-
+-    protected final ProtectedBinder binder() {
+-        if(binder == null) {
+-            throw new IllegalStateException("Binder is only usable during configuration");
+-        }
+-        return binder;
+-    }
+-
+-    @Override
+-    public final void configure(Binder binder) {
+-        final ProtectedBinder old = this.binder;
+-        this.binder = ProtectedBinderImpl.current(binder);
+-        try {
+-            if(this.binder != null) {
+-                configure();
+-            } else {
+-                binder.skipSources(ProtectedModule.class).addError(
+-                        ProtectedModule.class.getSimpleName() +
+-                                " must be installed with a " +
+-                                ProtectedBinder.class.getSimpleName()
+-                );
+-            }
+-        } finally {
+-            this.binder = old;
+-        }
+-    }
+-}
+\ No newline at end of file
+diff --git a/src/main/java/me/fixeddev/inject/package-info.java b/src/main/java/me/fixeddev/inject/package-info.java
+deleted file mode 100644
+index 6578966d..00000000
+--- a/src/main/java/me/fixeddev/inject/package-info.java
++++ /dev/null
+@@ -1,4 +0,0 @@
+-package me.fixeddev.inject;
+-/*
+- * This was taken from OvercastNetwork/ProjectAres/Utils and OvercastNetwork/minecraft-api
+- */
+\ No newline at end of file
+-- 
+2.21.0.windows.1
+
