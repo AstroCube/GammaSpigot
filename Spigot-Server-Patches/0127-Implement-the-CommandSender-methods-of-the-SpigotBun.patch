@@ -1,4 +1,4 @@
-From 48f746232e8933ba7497c6e5d2634576236691ae Mon Sep 17 00:00:00 2001
+From 1e11031212166587fff1c93412f6ff3a121690dd Mon Sep 17 00:00:00 2001
 From: Gilberto Garcia <gilbertodamian14@gmail.com>
 Date: Sun, 14 Jul 2019 18:30:50 -0500
 Subject: [PATCH] Implement the CommandSender methods of the SpigotBungee
@@ -143,24 +143,22 @@ index 9acd92c3..f18e7b3a 100644
      @Override
      public Server getServer() {
          return getCallee().getServer();
---
-
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
-index 9abcf92d..3d25d652 100644
+index 4f917990..bb38eb2e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
 @@ -7,6 +7,7 @@ import java.util.List;
  import java.util.Set;
  import java.util.UUID;
-
+ 
 +import net.md_5.bungee.api.chat.BaseComponent;
  import net.minecraft.server.*;
-
+ 
  import org.bukkit.EntityEffect;
 @@ -487,6 +488,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
-
+ 
      }
-
+ 
 +    @Override
 +    public void sendMessage(BaseComponent baseComponent) {
 +
@@ -174,6 +172,6 @@ index 9abcf92d..3d25d652 100644
      @Override
      public String getName() {
          return getHandle().getName();
---
+-- 
 2.21.0.windows.1
 
