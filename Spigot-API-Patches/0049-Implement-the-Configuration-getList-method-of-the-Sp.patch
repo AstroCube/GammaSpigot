@@ -1,0 +1,36 @@
+From 6837f92b7b38cdd8cf68940f4c2efbed2ea9aaa3 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 14 Jul 2019 18:13:12 -0500
+Subject: [PATCH] Implement the Configuration#getList method of the
+ SpigotBungee Bridge
+
+
+diff --git a/src/main/java/org/bukkit/configuration/MemorySection.java b/src/main/java/org/bukkit/configuration/MemorySection.java
+index 0e2b26a9..32c4837d 100644
+--- a/src/main/java/org/bukkit/configuration/MemorySection.java
++++ b/src/main/java/org/bukkit/configuration/MemorySection.java
+@@ -3,6 +3,7 @@ package org.bukkit.configuration;
+ import static org.bukkit.util.NumberConversions.*;
+ 
+ import java.util.ArrayList;
++import java.util.Collection;
+ import java.util.LinkedHashMap;
+ import java.util.LinkedHashSet;
+ import java.util.List;
+@@ -368,6 +369,13 @@ public class MemorySection implements ConfigurationSection {
+         return val instanceof Long;
+     }
+ 
++    @Override
++    public Collection<?> getList(String s, Collection<?> collection) {
++        List<?> returnList = getList(path);
++        return returnList == null ? collection : returnList;
++    }
++
++
+     // Java
+     public List<?> getList(String path) {
+         Object def = getDefault(path);
+-- 
+2.21.0.windows.1
+

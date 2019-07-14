@@ -1,0 +1,22 @@
+From bb35202e5d227d29427bca1e3dd231c91ade34e3 Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Thu, 11 Jul 2019 14:34:41 -0500
+Subject: [PATCH] Extend the Configuration interface of the SpigotBungee Bridge
+
+
+diff --git a/src/main/java/org/bukkit/configuration/ConfigurationSection.java b/src/main/java/org/bukkit/configuration/ConfigurationSection.java
+index 9afc1dc7..4c3e3b6f 100644
+--- a/src/main/java/org/bukkit/configuration/ConfigurationSection.java
++++ b/src/main/java/org/bukkit/configuration/ConfigurationSection.java
+@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
+ /**
+  * Represents a section of a {@link Configuration}
+  */
+-public interface ConfigurationSection {
++public interface ConfigurationSection extends me.fixeddev.minecraft.config.Configuration {
+     /**
+      * Gets a set containing all keys in this section.
+      * <p>
+-- 
+2.21.0.windows.1
+
