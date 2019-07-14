@@ -1,0 +1,179 @@
+From 48f746232e8933ba7497c6e5d2634576236691ae Mon Sep 17 00:00:00 2001
+From: Gilberto Garcia <gilbertodamian14@gmail.com>
+Date: Sun, 14 Jul 2019 18:30:50 -0500
+Subject: [PATCH] Implement the CommandSender methods of the SpigotBungee
+ Bridge
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftBlockCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftBlockCommandSender.java
+index 01f616bb..159ea55f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftBlockCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftBlockCommandSender.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.command;
+ 
++import net.md_5.bungee.api.chat.BaseComponent;
+ import net.minecraft.server.ICommandListener;
+ import net.minecraft.server.CommandBlockListenerAbstract;
+ import net.minecraft.server.IChatBaseComponent;
+@@ -19,6 +20,22 @@ public class CraftBlockCommandSender extends ServerCommandSender implements Bloc
+         this.commandBlock = commandBlockListenerAbstract;
+     }
+ 
++    @Override
++    public void sendMessage(BaseComponent baseComponent) {
++        sendMessage(baseComponent.toLegacyText());
++    }
++
++    @Override
++    public void sendMessage(BaseComponent... baseComponents) {
++        String[] messages = new String[baseComponents.length];
++
++        for (int i = 0; i < baseComponents.length; i++) {
++            messages[i] = baseComponents[i].toLegacyText();
++        }
++
++        sendMessage(messages);
++    }
++
+     public Block getBlock() {
+         return commandBlock.getWorld().getWorld().getBlockAt(commandBlock.getChunkCoordinates().getX(), commandBlock.getChunkCoordinates().getY(), commandBlock.getChunkCoordinates().getZ());
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
+index 9abcf92d..3d25d652 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftConsoleCommandSender.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.command;
+ 
++import net.md_5.bungee.api.chat.BaseComponent;
+ import org.bukkit.ChatColor;
+ import org.bukkit.command.ConsoleCommandSender;
+ import org.bukkit.conversations.Conversation;
+@@ -32,6 +33,22 @@ public class CraftConsoleCommandSender extends ServerCommandSender implements Co
+         }
+     }
+ 
++    @Override
++    public void sendMessage(BaseComponent baseComponent) {
++        sendMessage(baseComponent.toLegacyText());
++    }
++
++    @Override
++    public void sendMessage(BaseComponent... baseComponents) {
++        String[] messages = new String[baseComponents.length];
++
++        for (int i = 0; i < baseComponents.length; i++) {
++            messages[i] = baseComponents[i].toLegacyText();
++        }
++
++        sendMessage(messages);
++    }
++
+     public String getName() {
+         return "CONSOLE";
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+index 7c5523b0..522c5338 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/CraftRemoteConsoleCommandSender.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.command;
+ 
++import net.md_5.bungee.api.chat.BaseComponent;
+ import net.minecraft.server.ChatComponentText;
+ import net.minecraft.server.RemoteControlCommandListener;
+ import org.bukkit.command.RemoteConsoleCommandSender;
+@@ -21,6 +22,22 @@ public class CraftRemoteConsoleCommandSender extends ServerCommandSender impleme
+         }
+     }
+ 
++    @Override
++    public void sendMessage(BaseComponent baseComponent) {
++        sendMessage(baseComponent.toLegacyText());
++    }
++
++    @Override
++    public void sendMessage(BaseComponent... baseComponents) {
++        String[] messages = new String[baseComponents.length];
++
++        for (int i = 0; i < baseComponents.length; i++) {
++            messages[i] = baseComponents[i].toLegacyText();
++        }
++
++        sendMessage(messages);
++    }
++
+     @Override
+     public String getName() {
+         return "Rcon";
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/ProxiedNativeCommandSender.java b/src/main/java/org/bukkit/craftbukkit/command/ProxiedNativeCommandSender.java
+index 9acd92c3..f18e7b3a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/ProxiedNativeCommandSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/ProxiedNativeCommandSender.java
+@@ -2,6 +2,8 @@
+ package org.bukkit.craftbukkit.command;
+ 
+ import java.util.Set;
++
++import net.md_5.bungee.api.chat.BaseComponent;
+ import net.minecraft.server.ICommandListener;
+ 
+ import org.bukkit.Server;
+@@ -48,6 +50,22 @@ public class ProxiedNativeCommandSender implements ProxiedCommandSender {
+         getCaller().sendMessage(messages);
+     }
+ 
++    @Override
++    public void sendMessage(BaseComponent baseComponent) {
++        sendMessage(baseComponent.toLegacyText());
++    }
++
++    @Override
++    public void sendMessage(BaseComponent... baseComponents) {
++        String[] messages = new String[baseComponents.length];
++
++        for (int i = 0; i < baseComponents.length; i++) {
++            messages[i] = baseComponents[i].toLegacyText();
++        }
++
++        sendMessage(messages);
++    }
++
+     @Override
+     public Server getServer() {
+         return getCallee().getServer();
+--
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+index 9abcf92d..3d25d652 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftEntity.java
+@@ -7,6 +7,7 @@ import java.util.List;
+ import java.util.Set;
+ import java.util.UUID;
+
++import net.md_5.bungee.api.chat.BaseComponent;
+ import net.minecraft.server.*;
+
+ import org.bukkit.EntityEffect;
+@@ -487,6 +488,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
+
+     }
+
++    @Override
++    public void sendMessage(BaseComponent baseComponent) {
++
++    }
++
++    @Override
++    public void sendMessage(BaseComponent... baseComponents) {
++
++    }
++
+     @Override
+     public String getName() {
+         return getHandle().getName();
+--
+2.21.0.windows.1
+
