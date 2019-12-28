@@ -9,4 +9,6 @@ jobs:
 
     steps:
       - checkout
+      - run: git config --global user.email developement@seocraft.net
+      - run: git config --global user.name "TomateDeveloper"
       - run: /bin/bash build.sh
