@@ -1,5 +1,5 @@
 #!/bin/bash
 
-git clone https://github.com/FixedDev/Spigot-Bungee-Bridge
+git clone https://github.com/SeocraftNetwork/Spigot-Bungee-Bridge
 cd Spigot-Bungee-Bridge
 mvn clean install
