@@ -12,4 +12,5 @@ jobs:
       - run: echo 'export PATH=/bin:$PATH' >> $BASH_ENV
       - run: git config --global user.email developement@seocraft.net
       - run: git config --global user.name "TomateDeveloper"
+      - run: sh buildBridge.sh
       - run: sh build.sh
