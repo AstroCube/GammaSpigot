@@ -40,7 +40,7 @@
             <url>https://repo.seocraft.net/repository/seocraft-releases</url>
         </repository>
         <snapshotRepository>
-            <id>gamma-snapshots</id>
+            <id>seocraft-snapshots</id>
             <url>https://repo.seocraft.net/repository/seocraft-snapshots</url>
         </snapshotRepository>
     </distributionManagement>

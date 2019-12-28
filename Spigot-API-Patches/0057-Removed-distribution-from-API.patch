@@ -1,0 +1,31 @@
+From 00ecf2c3cd044b68d216eb7cbc632c0f702d27c9 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Sat, 28 Dec 2019 14:47:59 -0500
+Subject: [PATCH] Removed distribution from API
+
+
+diff --git a/pom.xml b/pom.xml
+index 2a8a5802..48e1265e 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -33,17 +33,6 @@
+         </pluginRepository>
+     </pluginRepositories>
+ 
+-    <distributionManagement>
+-        <repository>
+-            <id>seocraft-releases</id>
+-            <url>https://repo.seocraft.net/repository/seocraft-releases</url>
+-        </repository>
+-        <snapshotRepository>
+-            <id>seocraft-snapshots</id>
+-            <url>https://repo.seocraft.net/repository/seocraft-snapshots</url>
+-        </snapshotRepository>
+-    </distributionManagement>
+-
+     <dependencies>
+         <dependency>
+             <groupId>net.sf.trove4j</groupId>
+-- 
+2.22.0.windows.1
+

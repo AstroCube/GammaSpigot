@@ -1,0 +1,22 @@
+From 2ff42603a886f6789fb61e08866f9f7d9f5139ec Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Sat, 28 Dec 2019 14:23:42 -0500
+Subject: [PATCH] Updated dependency
+
+
+diff --git a/pom.xml b/pom.xml
+index 8c324eec..0b15dd43 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -34,7 +34,7 @@
+             <version>3.0.3</version>
+         </dependency>
+         <dependency>
+-            <groupId>org.github.paperspigot</groupId>
++            <groupId>net.seocraft</groupId>
+             <artifactId>paperspigot-api</artifactId>
+             <version>${project.version}</version>
+             <type>jar</type>
+-- 
+2.22.0.windows.1
+
