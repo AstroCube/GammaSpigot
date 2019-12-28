@@ -36,12 +36,13 @@
 
     <distributionManagement>
         <repository>
-            <id>destroystokyo-releases</id>
-            <url>https://repo.destroystokyo.com/content/repositories/releases/</url>
+            <id>seocraft-releases</id>
+            <url>https://repo.seocraft.net/repository/seocraft-releases</url>
         </repository>
         <snapshotRepository>
-            <id>destroystokyo-snapshots</id>
-            <url>https://repo.destroystokyo.com/content/repositories/snapshots/</url>
+            <id>gamma-snapshots</id>
+            <url>https://repo.seocraft.net/repository/seocraft-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
 </project>
