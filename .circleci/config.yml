@@ -9,4 +9,4 @@ jobs:
 
     steps:
       - checkout
-      - run: build.sh
+      - run: /bin/bash build.sh
