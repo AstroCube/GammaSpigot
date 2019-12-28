@@ -1,0 +1,31 @@
+From 6349063438578c4bc95f1cb7f5235b4554463f4a Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 18:30:32 -0500
+Subject: [PATCH] Updated distribution repository
+
+
+diff --git a/pom.xml b/pom.xml
+index 48e1265e..2a8a5802 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -33,6 +33,17 @@
+         </pluginRepository>
+     </pluginRepositories>
+ 
++    <distributionManagement>
++        <repository>
++            <id>seocraft-releases</id>
++            <url>https://repo.seocraft.net/repository/seocraft-releases</url>
++        </repository>
++        <snapshotRepository>
++            <id>seocraft-snapshots</id>
++            <url>https://repo.seocraft.net/repository/seocraft-snapshots</url>
++        </snapshotRepository>
++    </distributionManagement>
++
+     <dependencies>
+         <dependency>
+             <groupId>net.sf.trove4j</groupId>
+-- 
+2.22.0.windows.1
+

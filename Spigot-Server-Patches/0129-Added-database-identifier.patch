@@ -1,0 +1,91 @@
+From 581eb26bd5e437571623d713610ba2228be72dac Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 13:05:16 -0500
+Subject: [PATCH] Added database identifier
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 24b4a7d9..c57ed5a2 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -44,6 +44,7 @@ import java.io.ByteArrayOutputStream;
+ import java.io.IOException;
+ import java.net.InetSocketAddress;
+ import java.net.SocketAddress;
++import java.nio.charset.StandardCharsets;
+ import java.util.*;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+@@ -53,6 +54,7 @@ import java.util.logging.Logger;
+ 
+ @DelegateDeserialization(CraftOfflinePlayer.class)
+ public class CraftPlayer extends CraftHumanEntity implements Player {
++    private String databaseIdentifier = "";
+     private long firstPlayed = 0;
+     private long lastPlayed = 0;
+     private boolean hasPlayedBefore = false;
+@@ -267,7 +269,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+             name = getName();
+         }
+         getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromString(name)[0];
+-        for (EntityPlayer player : (List<EntityPlayer>) server.getHandle().players) {
++        for (EntityPlayer player : server.getHandle().players) {
+             if (player.getBukkitEntity().canSee(this)) {
+                 player.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, getHandle()));
+             }
+@@ -964,7 +966,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         //remove this player from the hidden player's EntityTrackerEntry
+         EntityTracker tracker = ((WorldServer) entity.world).tracker;
+         EntityPlayer other = ((CraftPlayer) player).getHandle();
+-        EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(other.getId());
++        EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
+         if (entry != null) {
+             entry.clear(getHandle());
+         }
+@@ -986,7 +988,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
+ 
+-        EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(other.getId());
++        EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
+         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
+             entry.updatePlayer(getHandle());
+         }
+@@ -1169,7 +1171,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+             for (String channel : listening) {
+                 try {
+-                    stream.write(channel.getBytes("UTF8"));
++                    stream.write(channel.getBytes(StandardCharsets.UTF_8));
+                     stream.write((byte) 0);
+                 } catch (IOException ex) {
+                     Logger.getLogger(CraftPlayer.class.getName()).log(Level.SEVERE, "Could not send Plugin Channel REGISTER to " + getName(), ex);
+@@ -1375,7 +1377,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+         injectScaledMaxHealth(set, true);
+ 
+-        getHandle().getDataWatcher().watch(6, (float) getScaledHealth());
++        getHandle().getDataWatcher().watch(6, getScaledHealth());
+         getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
+         getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(getHandle().getId(), set));
+ 
+@@ -1470,6 +1472,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return getDisguisedName() != null || getDisguisedSkin() != null;
+     }
+ 
++    @Override
++    public String getDatabaseIdentifier() {
++        return this.databaseIdentifier;
++    }
++
++    @Override
++    public void setDatabaseIdentifier(String identifier) {
++        if (this.databaseIdentifier.equalsIgnoreCase("")) this.databaseIdentifier = identifier;
++    }
++
+     @Override
+     public void setVelocity(org.bukkit.util.Vector velocity) {
+         // Send the new velocity to the player's client immediately, so it isn't affected by
+-- 
+2.22.0.windows.1
+

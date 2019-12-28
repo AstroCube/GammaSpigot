@@ -1,0 +1,22 @@
+From 41218bcc33cf149cbf4162650d3a341364485339 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 12:27:14 -0500
+Subject: [PATCH] Added database identifier field
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 55b26573..21f94e32 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1211,6 +1211,8 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+ 
+     boolean isDisguised();
+ 
++    String getDatabaseIdentifier();
++
+     // Spigot start
+     class Spigot extends Entity.Spigot
+     {
+-- 
+2.22.0.windows.1
+

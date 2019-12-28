@@ -1,0 +1,50 @@
+From b52f7dd23d3ce81cd8dd0a1e7d65aada9a5b1739 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 14:24:04 -0500
+Subject: [PATCH] Updated POM
+
+
+diff --git a/pom.xml b/pom.xml
+index 47f834cc..48e1265e 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,13 +3,14 @@
+     <modelVersion>4.0.0</modelVersion>
+ 
+     <parent>
+-        <groupId>org.github.paperspigot</groupId>
++        <groupId>net.seocraft</groupId>
+         <artifactId>paperspigot-parent</artifactId>
+-        <version>dev-SNAPSHOT</version>
++        <version>1.8-SNAPSHOT</version>
++        <relativePath>../pom.xml</relativePath>
+     </parent>
+ 
+     <artifactId>paperspigot-api</artifactId>
+-    <version>1.8.8-R0.1-SNAPSHOT</version>
++    <version>1.8-SNAPSHOT</version>
+     <packaging>jar</packaging>
+ 
+     <name>PaperSpigot-API</name>
+@@ -24,18 +25,6 @@
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     </properties>
+ 
+-    <!-- just until we get deployment to central approved -->
+-    <distributionManagement>
+-        <repository>
+-            <id>destroystokyo-releases</id>
+-            <url>https://repo.destroystokyo.com/content/repositories/releases/</url>
+-        </repository>
+-        <snapshotRepository>
+-            <id>destroystokyo-snapshots</id>
+-            <url>https://repo.destroystokyo.com/content/repositories/snapshots/</url>
+-        </snapshotRepository>
+-    </distributionManagement>
+-
+     <!-- required until fixed plexus-compiler-eclipse is deployed -->
+     <pluginRepositories>
+         <pluginRepository>
+-- 
+2.22.0.windows.1
+

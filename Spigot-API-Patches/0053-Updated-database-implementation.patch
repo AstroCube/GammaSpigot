@@ -1,0 +1,22 @@
+From f37469ccbd07567b6642227c5a1bec49d20b356f Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 13:04:24 -0500
+Subject: [PATCH] Updated database implementation
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 21f94e32..3fc504a5 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1213,6 +1213,8 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+ 
+     String getDatabaseIdentifier();
+ 
++    void setDatabaseIdentifier(String identifier);
++
+     // Spigot start
+     class Spigot extends Entity.Spigot
+     {
+-- 
+2.22.0.windows.1
+

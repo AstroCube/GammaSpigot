@@ -1,0 +1,22 @@
+From 6d4382097cb0e193d634c7754c60cd7473731758 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 25 Dec 2019 13:15:18 -0500
+Subject: [PATCH] Added database identifier
+
+
+diff --git a/pom.xml b/pom.xml
+index 7327b2e7..5f39e800 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -1,7 +1,7 @@
+ <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     <modelVersion>4.0.0</modelVersion>
+-    <groupId>org.github.paperspigot</groupId>
++
+     <artifactId>paperspigot</artifactId>
+     <packaging>jar</packaging>
+     <version>1.8.8-R0.1-SNAPSHOT</version>
+-- 
+2.22.0.windows.1
+

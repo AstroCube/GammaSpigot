@@ -1,0 +1,24 @@
+From f1a6d9e627e6bcdfde8ece043ed4dac7409571ce Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Tue, 24 Dec 2019 19:36:49 -0500
+Subject: [PATCH] Relocated maven dependency
+
+
+diff --git a/pom.xml b/pom.xml
+index eb7104b5..7327b2e7 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -203,6 +203,10 @@
+                                     <pattern>net.minecraft.server</pattern>
+                                     <shadedPattern>net.minecraft.server.v${minecraft_version}</shadedPattern>
+                                 </relocation>
++                                <relocation>
++                                    <pattern>io.netty</pattern>
++                                    <shadedPattern>net.seocraft.lib.netty</shadedPattern>
++                                </relocation>
+                             </relocations>
+                         </configuration>
+                     </execution>
+-- 
+2.22.0.windows.1
+
