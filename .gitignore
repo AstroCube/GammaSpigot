@@ -7,6 +7,10 @@
 nbproject/
 nbactions.xml
 
+# local dependencies
+Waterfall
+Spigot-Bungee-Bridge
+
 # we use maven!
 build.xml
 
