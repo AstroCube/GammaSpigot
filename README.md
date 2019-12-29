@@ -1,4 +1,4 @@
-PaperSpigot [![Build Status](https://travis-ci.com/FixedDev/fdSpigot.svg?token=EvsZr88ECYTmX3k4Wqf2&branch=master)](https://travis-ci.com/FixedDev/fdSpigot)
+PaperSpigot [![CircleCI](https://circleci.com/gh/SeocraftNetwork/GammaSpigot.svg?style=shield)](https://circleci.com/gh/SeocraftNetwork/GammaSpigot) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7630a915e66c4b619f4942fe10159379)](https://www.codacy.com/manual/TomateDeveloper/GammaSpigot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=SeocraftNetwork/GammaSpigot&amp;utm_campaign=Badge_Grade)
 ===========
 
 High performance Spigot fork that aims to fix gameplay and mechanics inconsistencies.
@@ -11,10 +11,3 @@ How To (Compiling From Source)
 To compile PaperSpigot, you need JDK8, maven, and an internet connection.
 
 Clone this repo, run ./build.sh from *bash*, get files.
-
-Special Thanks To:
--------------
-
-![YourKit-Logo](https://www.yourkit.com/images/yklogo.png)
-
-[YourKit](http://www.yourkit.com/), makers of the outstanding java profiler, support open source projects of all kinds with their full featured [Java](https://www.yourkit.com/java/profiler/index.jsp) and [.NET](https://www.yourkit.com/.net/profiler/index.jsp) application profilers. We thank them for granting PaperSpigot an OSS license so that we can make our software the best it can be.
