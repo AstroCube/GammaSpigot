@@ -1,0 +1,201 @@
+From 4394b2eaf74cdfa58a90412232b1eaa413008205 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Sun, 29 Dec 2019 17:05:35 -0500
+Subject: [PATCH] Added hologram implementation
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+new file mode 100644
+index 00000000..1251a7e7
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+@@ -0,0 +1,90 @@
++package org.bukkit.craftbukkit.creator.hologram;
++
++import org.bukkit.Location;
++import org.bukkit.creator.hologram.Hologram;
++import org.bukkit.creator.hologram.HologramLine;
++import org.bukkit.creator.hologram.LineCreator;
++import org.bukkit.creator.hologram.LineRemover;
++import org.bukkit.entity.Player;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.util.UUID;
++
++public class CraftHologram implements Hologram {
++
++    private LineCreator lineCreator = new CraftLineCreator();
++    private LineRemover lineRemover = new CraftLineRemover();
++    private UUID id;
++    private Player player;
++    private List<HologramLine> lines;
++    private Location location;
++
++    public CraftHologram(List<String> lines, Location location,Player player) {
++        this.id = UUID.randomUUID();
++        this.lines = new ArrayList<>();
++        lines.forEach(this::addLine);
++        this.location = location;
++        this.player = player;
++    }
++
++    public CraftHologram(Location location, Player player) {
++        this.id = UUID.randomUUID();
++        this.lines = new ArrayList<>();
++        this.location = location;
++        this.player = player;
++    }
++
++    @Override
++    public UUID getId() {
++        return this.id;
++    }
++
++    @Override
++    public List<HologramLine> getLines() {
++        return this.lines;
++    }
++
++    @Override
++    public Player getPlayer() {
++        return this.player;
++    }
++
++    @Override
++    public Location getLocation() {
++        return this.location;
++    }
++
++    @Override
++    public void setLocation(Location location) {
++    }
++
++    @Override
++    public void addLine(String message) {
++        this.lines.add(
++                this.lineCreator.createLine(message, player, location, (this.lines.size() + 1))
++        );
++    }
++
++    @Override
++    public void addSpace() {
++        // Create space
++    }
++
++    @Override
++    public void removeLine(int line) {
++        if (line > 0) {
++            CraftHologramLine hologramLine = (CraftHologramLine) this.getLines().get(line - 1);
++            this.lineRemover.removeLine(player, hologramLine.getEntityId());
++            this.getLines().remove(line - 1);
++        }
++    }
++
++    @Override
++    public void setLine(int line, String message) {
++        if (this.lines.size() < line) {
++            this.removeLine(line);
++        }
++    }
++
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologramLine.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologramLine.java
+new file mode 100644
+index 00000000..bd8232db
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologramLine.java
+@@ -0,0 +1,25 @@
++package org.bukkit.craftbukkit.creator.hologram;
++
++import org.bukkit.creator.hologram.HologramLine;
++
++public class CraftHologramLine implements HologramLine {
++
++    private String text;
++    private int entityId;
++
++    public CraftHologramLine(String text, int entityId) {
++        this.text = text;
++        this.entityId = entityId;
++    }
++
++    @Override
++    public String getText() {
++        return this.text;
++    }
++
++    @Override
++    public int getEntityId() {
++        return this.entityId;
++    }
++
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineCreator.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineCreator.java
+new file mode 100644
+index 00000000..cb0dce09
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineCreator.java
+@@ -0,0 +1,39 @@
++package org.bukkit.craftbukkit.creator.hologram;
++
++
++import net.minecraft.server.EntityArmorStand;
++import net.minecraft.server.PacketPlayOutSpawnEntityLiving;
++import net.minecraft.server.WorldServer;
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.CraftWorld;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.creator.hologram.HologramLine;
++import org.bukkit.creator.hologram.LineCreator;
++import org.bukkit.entity.Player;
++
++public class CraftLineCreator implements LineCreator {
++
++    @Override
++    public HologramLine createLine(String message, Player player, Location location, int position) {
++        return new CraftHologramLine(message, createStand(message, player, location, position));
++    }
++
++    private int createStand(String message, Player player, Location location, int position) {
++        Location standLocation = location.clone();
++
++        WorldServer s = ((CraftWorld) standLocation.getWorld()).getHandle();
++        EntityArmorStand stand = new EntityArmorStand(s);
++
++        stand.setLocation(standLocation.getX(), (standLocation.getY() - (position - 1) * 0.25), standLocation.getZ(), 0, 0);
++        stand.setCustomName(message);
++        stand.setCustomNameVisible(true);
++        stand.setGravity(true);
++        stand.setSmall(true);
++        stand.setInvisible(true);
++
++        PacketPlayOutSpawnEntityLiving packet = new PacketPlayOutSpawnEntityLiving(stand);
++        ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
++
++        return stand.getId();
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineRemover.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineRemover.java
+new file mode 100644
+index 00000000..c86287ec
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftLineRemover.java
+@@ -0,0 +1,14 @@
++package org.bukkit.craftbukkit.creator.hologram;
++
++import net.minecraft.server.PacketPlayOutEntityDestroy;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.creator.hologram.LineRemover;
++import org.bukkit.entity.Player;
++
++public class CraftLineRemover implements LineRemover {
++    @Override
++    public void removeLine(Player player, int packetId) {
++        PacketPlayOutEntityDestroy deadArmorstand = new PacketPlayOutEntityDestroy(packetId);
++        ((CraftPlayer) player).getHandle().playerConnection.sendPacket(deadArmorstand);
++    }
++}
+-- 
+2.22.0.windows.1
+

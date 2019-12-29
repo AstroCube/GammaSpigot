@@ -1,0 +1,160 @@
+From 94bc790074685a05f2da021161a72c3c930c5b0f Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Sun, 29 Dec 2019 16:23:42 -0500
+Subject: [PATCH] Created Hologram implementation
+
+
+diff --git a/src/main/java/org/bukkit/creator/hologram/Hologram.java b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+new file mode 100644
+index 00000000..ef5b37e1
+--- /dev/null
++++ b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+@@ -0,0 +1,57 @@
++package org.bukkit.creator.hologram;
++
++import org.bukkit.Location;
++import org.bukkit.entity.Player;
++
++import java.util.List;
++import java.util.UUID;
++
++public interface Hologram {
++
++    /**
++     * @return an unique identifier for the hologram
++     */
++    UUID getId();
++
++    /**
++     * @return the quantity of lines of the hologram
++     */
++    List<HologramLine> getLines();
++
++    /**
++     * @return the player which has assigned the hologram
++     */
++    Player getPlayer();
++
++    /**
++     * @return the location of the hologram
++     */
++    Location getLocation();
++
++    /**
++     * @param location establishes a new location for the hologram
++     */
++    void setLocation(Location location);
++
++    /**
++     * @param message add a new line to the hologram
++     */
++    void addLine(String message);
++
++    /**
++     * Create space between lines
++     */
++    void addSpace();
++
++    /**
++     * @param line to remove (Can not be zero)
++     */
++    void removeLine(int line);
++
++    /**
++     * @param line to be updated (Can not be zero)
++     * @param message to be updated
++     */
++    void setLine(int line, String message);
++
++}
+diff --git a/src/main/java/org/bukkit/creator/hologram/HologramLine.java b/src/main/java/org/bukkit/creator/hologram/HologramLine.java
+new file mode 100644
+index 00000000..eab5f002
+--- /dev/null
++++ b/src/main/java/org/bukkit/creator/hologram/HologramLine.java
+@@ -0,0 +1,15 @@
++package org.bukkit.creator.hologram;
++
++public interface HologramLine {
++
++    /**
++     * @return text of the line
++     */
++    String getText();
++
++    /**
++     * @return id of the packet related to the hologram
++     */
++    int getEntityId();
++
++}
+diff --git a/src/main/java/org/bukkit/creator/hologram/LineCreator.java b/src/main/java/org/bukkit/creator/hologram/LineCreator.java
+new file mode 100644
+index 00000000..d1e04579
+--- /dev/null
++++ b/src/main/java/org/bukkit/creator/hologram/LineCreator.java
+@@ -0,0 +1,18 @@
++package org.bukkit.creator.hologram;
++
++import org.bukkit.Location;
++import org.bukkit.entity.Player;
++
++public interface LineCreator {
++
++    /**
++     * Creates a default line for the hologram
++     * @param message that will be set for the hologram
++     * @param player which will keep the hologram line
++     * @param location to be retrieved from the hologram
++     * @param position of the line
++     * @return hologram line to be stored at the Hologram object
++     */
++    HologramLine createLine(String message, Player player, Location location, int position);
++
++}
+diff --git a/src/main/java/org/bukkit/creator/hologram/LineRemover.java b/src/main/java/org/bukkit/creator/hologram/LineRemover.java
+new file mode 100644
+index 00000000..c272a80b
+--- /dev/null
++++ b/src/main/java/org/bukkit/creator/hologram/LineRemover.java
+@@ -0,0 +1,8 @@
++package org.bukkit.creator.hologram;
++
++import org.bukkit.entity.Player;
++
++public interface LineRemover {
++
++    void removeLine(Player player, int packetId);
++}
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 3fc504a5..52fb2dbf 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1,6 +1,7 @@
+ package org.bukkit.entity;
+ 
+ import java.net.InetSocketAddress;
++import java.util.Set;
+ 
+ import org.bukkit.Achievement;
+ import org.bukkit.ChatColor;
+@@ -16,6 +17,7 @@ import org.bukkit.Statistic;
+ import org.bukkit.WeatherType;
+ import org.bukkit.command.CommandSender;
+ import org.bukkit.conversations.Conversable;
++import org.bukkit.creator.hologram.Hologram;
+ import org.bukkit.map.MapView;
+ import org.bukkit.plugin.messaging.PluginMessageRecipient;
+ import org.bukkit.scoreboard.Scoreboard;
+@@ -1211,6 +1213,8 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+ 
+     boolean isDisguised();
+ 
++    Set<Hologram> getLinkedHolograms();
++
+     String getDatabaseIdentifier();
+ 
+     void setDatabaseIdentifier(String identifier);
+-- 
+2.22.0.windows.1
+

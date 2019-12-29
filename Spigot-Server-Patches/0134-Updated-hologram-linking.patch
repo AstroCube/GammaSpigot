@@ -1,0 +1,41 @@
+From 95f80162e8bca18377ac93a9cbf8f7d211be7449 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Sun, 29 Dec 2019 17:26:16 -0500
+Subject: [PATCH] Updated hologram linking
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index c57ed5a2..ee47581d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -27,6 +27,7 @@ import org.bukkit.craftbukkit.map.RenderData;
+ import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
+ import org.bukkit.craftbukkit.util.CraftChatMessage;
+ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
++import org.bukkit.creator.hologram.Hologram;
+ import org.bukkit.entity.EntityType;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.player.*;
+@@ -54,6 +55,7 @@ import java.util.logging.Logger;
+ 
+ @DelegateDeserialization(CraftOfflinePlayer.class)
+ public class CraftPlayer extends CraftHumanEntity implements Player {
++    private Set<Hologram> holograms = new HashSet<>();
+     private String databaseIdentifier = "";
+     private long firstPlayed = 0;
+     private long lastPlayed = 0;
+@@ -1472,6 +1474,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         return getDisguisedName() != null || getDisguisedSkin() != null;
+     }
+ 
++    @Override
++    public Set<Hologram> getLinkedHolograms() {
++        return this.holograms;
++    }
++
+     @Override
+     public String getDatabaseIdentifier() {
+         return this.databaseIdentifier;
+-- 
+2.22.0.windows.1
+
