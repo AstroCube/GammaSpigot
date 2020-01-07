@@ -1,0 +1,46 @@
+From 5911100ca4d63fe8a013c5e8365bf7124f903e97 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 6 Jan 2020 11:40:31 -0500
+Subject: [PATCH] Add hologram to linked
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+index 1251a7e7b..3100b08b9 100644
+--- a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+@@ -26,6 +26,7 @@ public class CraftHologram implements Hologram {
+         lines.forEach(this::addLine);
+         this.location = location;
+         this.player = player;
++        player.getLinkedHolograms().add(this);
+     }
+ 
+     public CraftHologram(Location location, Player player) {
+@@ -33,6 +34,7 @@ public class CraftHologram implements Hologram {
+         this.lines = new ArrayList<>();
+         this.location = location;
+         this.player = player;
++        player.getLinkedHolograms().add(this);
+     }
+ 
+     @Override
+@@ -57,6 +59,7 @@ public class CraftHologram implements Hologram {
+ 
+     @Override
+     public void setLocation(Location location) {
++        //TODO: Create implementation
+     }
+ 
+     @Override
+@@ -68,7 +71,7 @@ public class CraftHologram implements Hologram {
+ 
+     @Override
+     public void addSpace() {
+-        // Create space
++        // TODO: Create space
+     }
+ 
+     @Override
+-- 
+2.22.0.windows.1
+

@@ -1,0 +1,23 @@
+From d33e71f36c99c5ec8f848d5ca8d911358183c51e Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 6 Jan 2020 11:41:27 -0500
+Subject: [PATCH] Added destroy method!
+
+
+diff --git a/src/main/java/org/bukkit/creator/hologram/Hologram.java b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+index ef5b37e1..545a2800 100644
+--- a/src/main/java/org/bukkit/creator/hologram/Hologram.java
++++ b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+@@ -54,4 +54,9 @@ public interface Hologram {
+      */
+     void setLine(int line, String message);
+ 
++    /**
++     * Will destroy the hologram and all the lines
++     */
++    void destroy();
++
+ }
+-- 
+2.22.0.windows.1
+

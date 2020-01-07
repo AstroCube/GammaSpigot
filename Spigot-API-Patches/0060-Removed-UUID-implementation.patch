@@ -1,0 +1,29 @@
+From c746151890bbd06323fd6d33d6706bce82ffa359 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 6 Jan 2020 11:48:56 -0500
+Subject: [PATCH] Removed UUID implementation
+
+
+diff --git a/src/main/java/org/bukkit/creator/hologram/Hologram.java b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+index 545a2800..8312580e 100644
+--- a/src/main/java/org/bukkit/creator/hologram/Hologram.java
++++ b/src/main/java/org/bukkit/creator/hologram/Hologram.java
+@@ -4,15 +4,9 @@ import org.bukkit.Location;
+ import org.bukkit.entity.Player;
+ 
+ import java.util.List;
+-import java.util.UUID;
+ 
+ public interface Hologram {
+ 
+-    /**
+-     * @return an unique identifier for the hologram
+-     */
+-    UUID getId();
+-
+     /**
+      * @return the quantity of lines of the hologram
+      */
+-- 
+2.22.0.windows.1
+

@@ -1,0 +1,62 @@
+From f1fbac0fb6045c697db4f54823ae18a2944075a9 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 6 Jan 2020 11:48:41 -0500
+Subject: [PATCH] Removed UUID
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+index 3100b08b9..e0dd5c600 100644
+--- a/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
++++ b/src/main/java/org/bukkit/craftbukkit/creator/hologram/CraftHologram.java
+@@ -9,19 +9,16 @@ import org.bukkit.entity.Player;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+-import java.util.UUID;
+ 
+ public class CraftHologram implements Hologram {
+ 
+     private LineCreator lineCreator = new CraftLineCreator();
+     private LineRemover lineRemover = new CraftLineRemover();
+-    private UUID id;
+     private Player player;
+     private List<HologramLine> lines;
+     private Location location;
+ 
+     public CraftHologram(List<String> lines, Location location,Player player) {
+-        this.id = UUID.randomUUID();
+         this.lines = new ArrayList<>();
+         lines.forEach(this::addLine);
+         this.location = location;
+@@ -30,17 +27,12 @@ public class CraftHologram implements Hologram {
+     }
+ 
+     public CraftHologram(Location location, Player player) {
+-        this.id = UUID.randomUUID();
+         this.lines = new ArrayList<>();
+         this.location = location;
+         this.player = player;
+         player.getLinkedHolograms().add(this);
+     }
+ 
+-    @Override
+-    public UUID getId() {
+-        return this.id;
+-    }
+ 
+     @Override
+     public List<HologramLine> getLines() {
+@@ -90,4 +82,10 @@ public class CraftHologram implements Hologram {
+         }
+     }
+ 
++    @Override
++    public void destroy() {
++        for (int i = 1; i < getLines().size(); i++) removeLine(i);
++        player.getLinkedHolograms().remove(this);
++    }
++
+ }
+-- 
+2.22.0.windows.1
+
