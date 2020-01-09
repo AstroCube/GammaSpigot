@@ -1,0 +1,43 @@
+From fa48408a7dbb513ccd66285fb3facdbca2b90d9b Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 8 Jan 2020 23:10:03 -0500
+Subject: [PATCH] Updated jukebox b ugs
+
+
+diff --git a/src/main/java/org/bukkit/event/jukebox/SongDestroyingEvent.java b/src/main/java/org/bukkit/event/jukebox/SongDestroyingEvent.java
+index d8d5634e..ade204ad 100644
+--- a/src/main/java/org/bukkit/event/jukebox/SongDestroyingEvent.java
++++ b/src/main/java/org/bukkit/event/jukebox/SongDestroyingEvent.java
+@@ -1,17 +1,17 @@
+ package org.bukkit.event.jukebox;
+ 
+-import org.bukkit.craftbukkit.jukebox.player.CraftSongPlayer;
+ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.Event;
+ import org.bukkit.event.HandlerList;
++import org.bukkit.jukebox.player.SongPlayer;
+ 
+ public class SongDestroyingEvent extends Event implements Cancellable {
+ 
+     private static final HandlerList handlers = new HandlerList();
+-    private CraftSongPlayer song;
++    private SongPlayer song;
+     private boolean cancelled = false;
+ 
+-    public SongDestroyingEvent(CraftSongPlayer song) {
++    public SongDestroyingEvent(SongPlayer song) {
+         this.song = song;
+     }
+ 
+@@ -19,7 +19,7 @@ public class SongDestroyingEvent extends Event implements Cancellable {
+         return handlers;
+     }
+ 
+-    public CraftSongPlayer getSongPlayer() {
++    public SongPlayer getSongPlayer() {
+         return song;
+     }
+ 
+-- 
+2.22.0.windows.1
+
