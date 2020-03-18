@@ -36,12 +36,12 @@
 
     <distributionManagement>
         <repository>
-            <id>seocraft-releases</id>
-            <url>https://repo.seocraft.net/repository/seocraft-releases</url>
+            <id>maven-releases</id>
+            <url>https://repo.seocraft.net/repository/maven-releases</url>
         </repository>
         <snapshotRepository>
-            <id>seocraft-snapshots</id>
-            <url>https://repo.seocraft.net/repository/seocraft-snapshots</url>
+            <id>maven-snapshots</id>
+            <url>https://repo.seocraft.net/repository/maven-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
