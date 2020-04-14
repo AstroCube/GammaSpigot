@@ -1,0 +1,22 @@
+From 4889f35847abd6e973ebd5f94a5ef6120d9ad914 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Tue, 14 Apr 2020 12:04:10 -0500
+Subject: [PATCH] Modify objective access
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+index a2699aa5..0c1a2efa 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+@@ -113,7 +113,7 @@ public class CraftGameBoard implements GameBoard {
+     }
+ 
+    
+-    Objective getObjective() {
++    public Objective getObjective() {
+         return this.objective;
+     }
+ }
+-- 
+2.22.0.windows.1
+

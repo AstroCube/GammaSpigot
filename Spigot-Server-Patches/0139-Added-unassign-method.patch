@@ -1,0 +1,21 @@
+From 98e666018dfd623453e0b3d6733fea27b1d366ea Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 13 Apr 2020 23:25:34 -0500
+Subject: [PATCH] Added unassign method
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 06621364..ace24526 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1510,6 +1510,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+     @Override
+     public void removeScoreboard() {
++        board.unassignScoreboard(this);
+         this.board = null;
+     }
+ 
+-- 
+2.22.0.windows.1
+

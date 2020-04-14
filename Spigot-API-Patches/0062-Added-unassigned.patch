@@ -1,0 +1,115 @@
+From 18ece2c670fcab3b39ef10e6a4d19b44120e4e6d Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 13 Apr 2020 23:25:47 -0500
+Subject: [PATCH] Added unassigned
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 52fb2dbf..476a97bc 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -20,6 +20,7 @@ import org.bukkit.conversations.Conversable;
+ import org.bukkit.creator.hologram.Hologram;
+ import org.bukkit.map.MapView;
+ import org.bukkit.plugin.messaging.PluginMessageRecipient;
++import org.bukkit.scoreboard.GameBoard;
+ import org.bukkit.scoreboard.Scoreboard;
+ // PaperSpigot start
+ import org.github.paperspigot.Title;
+@@ -1219,6 +1220,14 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+ 
+     void setDatabaseIdentifier(String identifier);
+ 
++    @Nullable GameBoard getAttachedBoard();
++
++    boolean hasAttachedBoard();
++
++    void setAttachedBoard(GameBoard board);
++
++    void removeScoreboard();
++
+     // Spigot start
+     class Spigot extends Entity.Spigot
+     {
+diff --git a/src/main/java/org/bukkit/scoreboard/BoardLine.java b/src/main/java/org/bukkit/scoreboard/BoardLine.java
+index 1a68e37f..057825e3 100644
+--- a/src/main/java/org/bukkit/scoreboard/BoardLine.java
++++ b/src/main/java/org/bukkit/scoreboard/BoardLine.java
+@@ -1,4 +1,11 @@
+ package org.bukkit.scoreboard;
+ 
+ public interface BoardLine {
++
++    String getText();
++
++    int getPosition();
++
++    boolean isStatic();
++
+ }
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoard.java b/src/main/java/org/bukkit/scoreboard/GameBoard.java
+index ed92503e..68f439b2 100644
+--- a/src/main/java/org/bukkit/scoreboard/GameBoard.java
++++ b/src/main/java/org/bukkit/scoreboard/GameBoard.java
+@@ -1,4 +1,36 @@
+ package org.bukkit.scoreboard;
+ 
++import org.bukkit.entity.Player;
++
++import javax.annotation.Nullable;
++import java.util.Optional;
++import java.util.Set;
++import java.util.UUID;
++
+ public interface GameBoard {
++
++    UUID getId();
++
++    Set<BoardLine> getLines();
++
++    Optional<BoardLine> getLine(int line);
++
++    void addLine(int line, String text);
++
++    void addStaticLine(int line, String text);
++
++    void setLine(int line, String text);
++
++    void removeLine(int line);
++
++    void setTitle(String title);
++
++   String getTitle();
++
++    void assignScoreboard(Player player);
++
++    @Nullable Player getAssignation();
++
++    void unassignScoreboard(Player player);
++
+ }
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoardException.java b/src/main/java/org/bukkit/scoreboard/GameBoardException.java
+index 56bd37c8..0d91eb84 100644
+--- a/src/main/java/org/bukkit/scoreboard/GameBoardException.java
++++ b/src/main/java/org/bukkit/scoreboard/GameBoardException.java
+@@ -1,4 +1,16 @@
+ package org.bukkit.scoreboard;
+ 
+-public class GameBoardException {
++public class GameBoardException extends RuntimeException {
++
++    private String message;
++
++    public GameBoardException(String message) {
++        this.message = message;
++    }
++
++    @Override
++    public String getMessage() {
++        return this.message;
++    }
++
+ }
+-- 
+2.22.0.windows.1
+

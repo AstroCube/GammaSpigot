@@ -1,0 +1,39 @@
+From 0e83cc9f3c19bfb85179edeb16a87267ad7343d6 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 13 Apr 2020 23:12:25 -0500
+Subject: [PATCH] Added craft gameboard implementation
+
+
+diff --git a/src/main/java/org/bukkit/scoreboard/BoardLine.java b/src/main/java/org/bukkit/scoreboard/BoardLine.java
+new file mode 100644
+index 00000000..1a68e37f
+--- /dev/null
++++ b/src/main/java/org/bukkit/scoreboard/BoardLine.java
+@@ -0,0 +1,4 @@
++package org.bukkit.scoreboard;
++
++public interface BoardLine {
++}
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoard.java b/src/main/java/org/bukkit/scoreboard/GameBoard.java
+new file mode 100644
+index 00000000..ed92503e
+--- /dev/null
++++ b/src/main/java/org/bukkit/scoreboard/GameBoard.java
+@@ -0,0 +1,4 @@
++package org.bukkit.scoreboard;
++
++public interface GameBoard {
++}
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoardException.java b/src/main/java/org/bukkit/scoreboard/GameBoardException.java
+new file mode 100644
+index 00000000..56bd37c8
+--- /dev/null
++++ b/src/main/java/org/bukkit/scoreboard/GameBoardException.java
+@@ -0,0 +1,4 @@
++package org.bukkit.scoreboard;
++
++public class GameBoardException {
++}
+-- 
+2.22.0.windows.1
+

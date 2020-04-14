@@ -1,0 +1,81 @@
+From e6ffe012d139efb8e9dd69e1ff1489fcbc0b7265 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 13 Apr 2020 23:24:52 -0500
+Subject: [PATCH] Added player methods
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index ee47581d..06621364 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -37,6 +37,7 @@ import org.bukkit.map.MapView;
+ import org.bukkit.metadata.MetadataValue;
+ import org.bukkit.plugin.Plugin;
+ import org.bukkit.plugin.messaging.StandardMessenger;
++import org.bukkit.scoreboard.GameBoard;
+ import org.bukkit.scoreboard.Scoreboard;
+ import org.github.paperspigot.Title;
+ 
+@@ -63,6 +64,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     private final ConversationTracker conversationTracker = new ConversationTracker();
+     private final Set<String> channels = new HashSet<String>();
+     private final Set<UUID> hiddenPlayers = new HashSet<UUID>();
++    private GameBoard board;
+     private int hash = 0;
+     private double health = 20;
+     private boolean scaledHealth = false;
+@@ -1489,6 +1491,28 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         if (this.databaseIdentifier.equalsIgnoreCase("")) this.databaseIdentifier = identifier;
+     }
+ 
++    @Nullable
++    @Override
++    public GameBoard getAttachedBoard() {
++        return this.board;
++    }
++
++    @Override
++    public boolean hasAttachedBoard() {
++        return this.board != null;
++    }
++
++    @Override
++    public void setAttachedBoard(GameBoard board) {
++        this.board = board;
++        board.assignScoreboard(this);
++    }
++
++    @Override
++    public void removeScoreboard() {
++        this.board = null;
++    }
++
+     @Override
+     public void setVelocity(org.bukkit.util.Vector velocity) {
+         // Send the new velocity to the player's client immediately, so it isn't affected by
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+index 9356a590..a2699aa5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.scoreboard;
+ 
++import org.bukkit.Bukkit;
+ import org.bukkit.entity.Player;
+ import org.bukkit.scoreboard.*;
+ 
+@@ -97,6 +98,11 @@ public class CraftGameBoard implements GameBoard {
+         return this.player;
+     }
+ 
++    @Override
++    public void unassignScoreboard(Player player) {
++        player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
++    }
++
+     private CraftBoardLine createGenericLine(String text, int line, boolean staticLine) {
+         if (line > 15 || line < 0) throw new GameBoardException("The scoreboard line must be between 0 and 15");
+         if (this.boardLines.size() == 15) throw new GameBoardException("The scoreboard is full");
+-- 
+2.22.0.windows.1
+

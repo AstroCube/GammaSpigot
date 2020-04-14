@@ -1,0 +1,253 @@
+From 483e9077ff4248c529159d2a58aba81bdf6b4829 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Mon, 13 Apr 2020 23:14:07 -0500
+Subject: [PATCH] Added craft board implementation
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java
+new file mode 100644
+index 00000000..64f81396
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java
+@@ -0,0 +1,31 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.scoreboard.BoardLine;
++
++class CraftBoardLine implements BoardLine {
++
++    private String text;
++    private int position;
++    private boolean staticLine;
++
++    CraftBoardLine(String text, int position, boolean staticLine) {
++        this.text = text;
++        this.position = position;
++        this.staticLine = staticLine;
++    }
++
++    @Override
++    public String getText() {
++        return this.text;
++    }
++
++    @Override
++    public int getPosition() {
++        return this.position;
++    }
++
++    @Override
++    public boolean isStatic() {
++        return this.staticLine;
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+new file mode 100644
+index 00000000..9356a590
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+@@ -0,0 +1,113 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.entity.Player;
++import org.bukkit.scoreboard.*;
++
++import javax.annotation.Nullable;
++import java.util.HashSet;
++import java.util.Optional;
++import java.util.Set;
++import java.util.UUID;
++
++public class CraftGameBoard implements GameBoard {
++
++    private UUID id;
++    private String title;
++    private Set<BoardLine> boardLines;
++
++    private Objective objective;
++    private Scoreboard scoreboard;
++    private @Nullable Player player;
++
++    public CraftGameBoard(String title) {
++        this.id = UUID.randomUUID();
++        this.title = title;
++        this.boardLines = new HashSet<>();
++        this.scoreboard = MinecraftGameBoardHandler.createScoreboard();
++        this.objective = MinecraftGameBoardHandler.createBoardObjective(this.scoreboard, this.title, this.id);
++    }
++
++    @Override
++    public UUID getId() {
++        return this.id;
++    }
++
++    @Override
++    public Set<BoardLine> getLines() {
++        return this.boardLines;
++    }
++
++    @Override
++    public Optional<BoardLine> getLine(int line) {
++        for (BoardLine boardLine : this.boardLines) {
++            if (boardLine.getPosition() == line) return Optional.of(boardLine);
++        }
++        return Optional.empty();
++    }
++
++    @Override
++    public void addLine(int line, String text) {
++        MinecraftGameBoardHandler.setBoardLine(createGenericLine(text, line, false), this.objective, this.scoreboard);
++    }
++
++    @Override
++    public void addStaticLine(int line, String text) {
++        MinecraftGameBoardHandler.setStaticLine(createGenericLine(text, line, true), this.objective);
++    }
++
++    @Override
++    public void setLine(int line, String text) {
++        Optional<BoardLine> boardLine = this.getLine(line);
++        if (!boardLine.isPresent()) throw new GameBoardException("The requested line is not set at the scoreboard");
++        if (boardLine.get().isStatic()) throw new GameBoardException("Static lines must not change");
++        BoardLine newLine = new CraftBoardLine(text,  line, false);
++        MinecraftGameBoardHandler.updateBoardLine(newLine, scoreboard);
++        this.boardLines.remove(boardLine.get());
++        this.boardLines.add(newLine);
++    }
++
++    @Override
++    public void removeLine(int line) {
++        Optional<BoardLine> actualLine = this.getLine(line);
++        if (!actualLine.isPresent()) throw new GameBoardException("The requested line is not set at the scoreboard");
++        if (actualLine.get().isStatic()) throw new GameBoardException("Static lines must no change");
++        MinecraftGameBoardHandler.removeBoardLine(actualLine.get(), this.scoreboard);
++        this.boardLines.remove(actualLine.get());
++    }
++
++    @Override
++    public void setTitle(String title) {
++        this.title = title;
++        this.objective.setDisplayName(this.title);
++    }
++
++    @Override
++    public String getTitle() {
++        return this.title;
++    }
++
++    @Override
++    public void assignScoreboard(Player player) {
++        this.player = player;
++        MinecraftGameBoardHandler.assignScoreboard(player, this.scoreboard);
++    }
++
++    @Override
++    public @Nullable Player getAssignation() {
++        return this.player;
++    }
++
++    private CraftBoardLine createGenericLine(String text, int line, boolean staticLine) {
++        if (line > 15 || line < 0) throw new GameBoardException("The scoreboard line must be between 0 and 15");
++        if (this.boardLines.size() == 15) throw new GameBoardException("The scoreboard is full");
++        if (this.getLine(line).isPresent()) throw new GameBoardException("Scoreboard lines should not be recreated");
++        CraftBoardLine boardLine = new CraftBoardLine(text, line, staticLine);
++        this.boardLines.add(boardLine);
++        return boardLine;
++    }
++
++   
++    Objective getObjective() {
++        return this.objective;
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java
+new file mode 100644
+index 00000000..fd5d11e5
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java
+@@ -0,0 +1,49 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.scoreboard.*;
++
++import java.util.Optional;
++import java.util.UUID;
++
++class MinecraftGameBoardHandler {
++
++    static 
++    Scoreboard createScoreboard() {
++        return Bukkit.getScoreboardManager().getNewScoreboard();
++    }
++
++    static 
++    Objective createBoardObjective(Scoreboard scoreboard, String title, UUID id) {
++        Objective objective = scoreboard.registerNewObjective(title.length() > 16 ? title.substring(0, 16) : title, id.toString());
++        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
++        objective.setDisplayName(title);
++        return objective;
++    }
++
++    static void setStaticLine(BoardLine boardLine, Objective objective) {
++        Score score = objective.getScore(boardLine.getText());
++        score.setScore(boardLine.getPosition());
++    }
++
++    static void setBoardLine(BoardLine boardLine, Objective objective, Scoreboard board) {
++        Team team = Optional.ofNullable(board.getTeam("line_" + boardLine.getPosition())).orElseGet(() -> board.registerNewTeam("line_" + boardLine.getPosition()));
++        team.addEntry(TeamEntries.getLineEntry(boardLine.getPosition()));
++        team.setPrefix(boardLine.getText());
++        objective.getScore(TeamEntries.getLineEntry(boardLine.getPosition())).setScore(boardLine.getPosition());
++    }
++
++    static void updateBoardLine(BoardLine boardLine, Scoreboard board) {
++        Team team = board.getTeam("line_" + boardLine.getPosition());
++        team.setPrefix(boardLine.getText());
++    }
++
++    static void removeBoardLine( BoardLine boardLine, Scoreboard board) {
++        board.resetScores(TeamEntries.getLineEntry(boardLine.getPosition()));
++    }
++
++    static void assignScoreboard(Player player, Scoreboard scoreboard) {
++        player.setScoreboard(scoreboard);
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/TeamEntries.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/TeamEntries.java
+new file mode 100644
+index 00000000..de7da473
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/TeamEntries.java
+@@ -0,0 +1,27 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.ChatColor;
++
++class TeamEntries {
++
++    static String getLineEntry(int entry) {
++        switch (entry) {
++            case 15: return ChatColor.BLACK + "" + ChatColor.WHITE;
++            case 14: return ChatColor.DARK_BLUE + "" + ChatColor.WHITE;
++            case 13: return ChatColor.DARK_GREEN + "" + ChatColor.WHITE;
++            case 12: return ChatColor.AQUA + "" + ChatColor.WHITE;
++            case 11: return ChatColor.DARK_RED + "" + ChatColor.WHITE;
++            case 10: return ChatColor.DARK_PURPLE + "" + ChatColor.WHITE;
++            case 9: return ChatColor.GOLD + "" + ChatColor.WHITE;
++            case 8: return ChatColor.GRAY + "" + ChatColor.WHITE;
++            case 7: return ChatColor.DARK_GRAY + "" + ChatColor.WHITE;
++            case 6: return ChatColor.BLUE + "" + ChatColor.WHITE;
++            case 5: return ChatColor.GREEN + "" + ChatColor.WHITE;
++            case 4: return ChatColor.RED + "" + ChatColor.WHITE;
++            case 3: return ChatColor.LIGHT_PURPLE + "" + ChatColor.WHITE;
++            case 2: return ChatColor.YELLOW + "" + ChatColor.WHITE;
++            case 1: return ChatColor.UNDERLINE + "" + ChatColor.WHITE;
++            default: return ChatColor.MAGIC + "" + ChatColor.WHITE;
++        }
++    }
++}
+-- 
+2.22.0.windows.1
+
