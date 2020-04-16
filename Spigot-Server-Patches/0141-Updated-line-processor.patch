@@ -1,0 +1,152 @@
+From 1c771948ef325ee2138ddf9f8f8ec605f345c0fe Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Tue, 14 Apr 2020 21:51:11 -0500
+Subject: [PATCH] Updated line processor
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardEntry.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardEntry.java
+new file mode 100644
+index 00000000..a2c2a868
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardEntry.java
+@@ -0,0 +1,24 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.scoreboard.BoardEntry;
++
++public class CraftBoardEntry implements BoardEntry {
++
++    private String prefix;
++    private String suffix;
++
++    public CraftBoardEntry(String prefix, String suffix) {
++        this.prefix = prefix;
++        this.suffix = suffix;
++    }
++
++    @Override
++    public String getPrefix() {
++        return this.prefix;
++    }
++
++    @Override
++    public String getSuffix() {
++        return this.suffix;
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java
+index 64f81396..f0bddf83 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftBoardLine.java
+@@ -1,21 +1,22 @@
+ package org.bukkit.craftbukkit.scoreboard;
+ 
++import org.bukkit.scoreboard.BoardEntry;
+ import org.bukkit.scoreboard.BoardLine;
+ 
+ class CraftBoardLine implements BoardLine {
+ 
+-    private String text;
++    private BoardEntry text;
+     private int position;
+     private boolean staticLine;
+ 
+-    CraftBoardLine(String text, int position, boolean staticLine) {
++    CraftBoardLine(BoardEntry text, int position, boolean staticLine) {
+         this.text = text;
+         this.position = position;
+         this.staticLine = staticLine;
+     }
+ 
+     @Override
+-    public String getText() {
++    public BoardEntry getText() {
+         return this.text;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+index 0c1a2efa..53075e2a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftGameBoard.java
+@@ -61,7 +61,7 @@ public class CraftGameBoard implements GameBoard {
+         Optional<BoardLine> boardLine = this.getLine(line);
+         if (!boardLine.isPresent()) throw new GameBoardException("The requested line is not set at the scoreboard");
+         if (boardLine.get().isStatic()) throw new GameBoardException("Static lines must not change");
+-        BoardLine newLine = new CraftBoardLine(text,  line, false);
++        BoardLine newLine = new CraftBoardLine(LineProcessor.getProcessedText(text),  line, false);
+         MinecraftGameBoardHandler.updateBoardLine(newLine, scoreboard);
+         this.boardLines.remove(boardLine.get());
+         this.boardLines.add(newLine);
+@@ -107,7 +107,7 @@ public class CraftGameBoard implements GameBoard {
+         if (line > 15 || line < 0) throw new GameBoardException("The scoreboard line must be between 0 and 15");
+         if (this.boardLines.size() == 15) throw new GameBoardException("The scoreboard is full");
+         if (this.getLine(line).isPresent()) throw new GameBoardException("Scoreboard lines should not be recreated");
+-        CraftBoardLine boardLine = new CraftBoardLine(text, line, staticLine);
++        CraftBoardLine boardLine = new CraftBoardLine(LineProcessor.getProcessedText(text), line, staticLine);
+         this.boardLines.add(boardLine);
+         return boardLine;
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java
+new file mode 100644
+index 00000000..318bb4f4
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java
+@@ -0,0 +1,25 @@
++package org.bukkit.craftbukkit.scoreboard;
++
++import org.bukkit.ChatColor;
++import org.bukkit.scoreboard.BoardEntry;
++
++public class LineProcessor {
++
++    private static String[] format = new String[]{"k", "l", "m", "n", "r", "o"};
++
++    public static BoardEntry getProcessedText(String text) {
++        if (text.length() < 16) return new CraftBoardEntry(text, "");
++        String prefix = text.substring(0, 16);
++        StringBuilder suffix = new StringBuilder(text.substring(16));
++        ChatColor prefixColor = ChatColor.getByChar(ChatColor.getLastColors(prefix).substring(1));
++        String finals = prefix.replace(ChatColor.COLOR_CHAR + "", "&").split("&" + prefixColor.getChar())[1];
++        for (String f: format) {
++            if (finals.contains("&" + f)) suffix.insert(0, ChatColor.getByChar(f));
++        }
++        String finalString = prefix + prefixColor + suffix;
++        return new CraftBoardEntry(
++                prefix,
++                finalString.length() > 16 ? finalString.substring(0, 16) + "..." : finalString
++        );
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java
+index fd5d11e5..25191972 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/MinecraftGameBoardHandler.java
+@@ -23,20 +23,22 @@ class MinecraftGameBoardHandler {
+     }
+ 
+     static void setStaticLine(BoardLine boardLine, Objective objective) {
+-        Score score = objective.getScore(boardLine.getText());
++        Score score = objective.getScore(boardLine.getText().getPrefix() + boardLine.getText().getSuffix());
+         score.setScore(boardLine.getPosition());
+     }
+ 
+     static void setBoardLine(BoardLine boardLine, Objective objective, Scoreboard board) {
+         Team team = Optional.ofNullable(board.getTeam("line_" + boardLine.getPosition())).orElseGet(() -> board.registerNewTeam("line_" + boardLine.getPosition()));
+         team.addEntry(TeamEntries.getLineEntry(boardLine.getPosition()));
+-        team.setPrefix(boardLine.getText());
++        team.setPrefix(boardLine.getText().getPrefix());
++        team.setSuffix(boardLine.getText().getSuffix());
+         objective.getScore(TeamEntries.getLineEntry(boardLine.getPosition())).setScore(boardLine.getPosition());
+     }
+ 
+     static void updateBoardLine(BoardLine boardLine, Scoreboard board) {
+         Team team = board.getTeam("line_" + boardLine.getPosition());
+-        team.setPrefix(boardLine.getText());
++        team.setPrefix(boardLine.getText().getPrefix());
++        team.setSuffix(boardLine.getText().getSuffix());
+     }
+ 
+     static void removeBoardLine( BoardLine boardLine, Scoreboard board) {
+-- 
+2.22.0.windows.1
+

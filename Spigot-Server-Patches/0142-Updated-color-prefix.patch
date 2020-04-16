@@ -1,0 +1,26 @@
+From 25a8a840d849905d29dec298441babbf162ad7d6 Mon Sep 17 00:00:00 2001
+From: TomateDeveloper <ianfe@martina.com.co>
+Date: Wed, 15 Apr 2020 00:08:22 -0500
+Subject: [PATCH] Updated color prefix
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java
+index 318bb4f4..3614d017 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/LineProcessor.java
+@@ -16,10 +16,10 @@ public class LineProcessor {
+         for (String f: format) {
+             if (finals.contains("&" + f)) suffix.insert(0, ChatColor.getByChar(f));
+         }
+-        String finalString = prefix + prefixColor + suffix;
++        String finalString = prefixColor + "" + suffix;
+         return new CraftBoardEntry(
+                 prefix,
+-                finalString.length() > 16 ? finalString.substring(0, 16) + "..." : finalString
++                finalString.length() > 16 ? finalString.substring(0, 16) : finalString
+         );
+     }
+ }
+-- 
+2.22.0.windows.1
+
