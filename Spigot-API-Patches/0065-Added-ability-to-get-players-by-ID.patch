@@ -1,0 +1,48 @@
+From d9c73654d6fb9eeb8d1a675bad2e7a1259cc3292 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Mon, 4 Jan 2021 23:54:15 -0500
+Subject: [PATCH] Added ability to get players by ID
+
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 65af6214..5ef87100 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -412,6 +412,15 @@ public final class Bukkit {
+         return server.getPlayerExact(name);
+     }
+ 
++
++    /**
++     * Gets the player with the given Identifier.
++     *
++     * @param id of the player to retrieve
++     * @return a player object if one was found, null otherwise
++     */
++    public static Player getPlayerByIdentifier(String id) { return server.getPlayerByIdentifier(id); }
++
+     /**
+      * Attempts to match any players with the given name, and returns a list
+      * of all possibly matches.
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 6f85c35e..5a1d2a59 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -352,6 +352,14 @@ public interface Server extends PluginMessageRecipient {
+      */
+     public List<Player> matchPlayer(String name);
+ 
++    /**
++     * Gets the player with the given Identifier.
++     *
++     * @param id of the player to retrieve
++     * @return a player object if one was found, null otherwise
++     */
++    Player getPlayerByIdentifier(String id);
++
+     /**
+      * Gets the player with the given UUID.
+      *
+-- 
+2.29.2.windows.3
+

@@ -1,0 +1,38 @@
+From 66736880926efbe1670da88a06d744ed402e332f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Tue, 5 Jan 2021 00:12:34 -0500
+Subject: [PATCH] Now will never store null
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index c980264a..765b62fa 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -306,7 +306,13 @@ public abstract class PlayerList {
+         this.players.add(entityplayer);
+         this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
+         this.j.put(entityplayer.getUniqueID(), entityplayer);
+-        this.byIdentifier.put(entityplayer.getDatabaseIdentifier(), entityplayer);
++
++        String oldIdentifier = entityplayer.getDatabaseIdentifier();
++
++        if (oldIdentifier != null && !oldIdentifier.isEmpty())  {
++            this.byIdentifier.put(oldIdentifier, entityplayer);
++        }
++
+         // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer})); // CraftBukkit - replaced with loop below
+         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
+ 
+@@ -314,6 +320,9 @@ public abstract class PlayerList {
+         PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), joinMessage);
+         cserver.getPluginManager().callEvent(playerJoinEvent);
+ 
++        byIdentifier.remove(oldIdentifier);
++        byIdentifier.put(entityplayer.getDatabaseIdentifier(), entityplayer);
++
+         joinMessage = playerJoinEvent.getJoinMessage();
+ 
+         if (joinMessage != null && joinMessage.length() > 0) {
+-- 
+2.29.2.windows.3
+

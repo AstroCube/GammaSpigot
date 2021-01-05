@@ -1,0 +1,26 @@
+From a19f075c09edc6592220657a4231802a96314fed Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Mon, 4 Jan 2021 23:44:12 -0500
+Subject: [PATCH] Optimized locations
+
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index e7af316d..1bf20539 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -548,11 +548,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
+ 
+     @Override
+     public Location clone() {
+-        try {
+-            return (Location) super.clone();
+-        } catch (CloneNotSupportedException e) {
+-            throw new Error(e);
+-        }
++        return new Location(world, x, y, z, yaw, pitch);
+     }
+ 
+     /**
+-- 
+2.29.2.windows.3
+

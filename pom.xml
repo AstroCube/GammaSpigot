@@ -9,14 +9,14 @@
         <version>7</version>
     </parent>
 
-    <groupId>net.seocraft</groupId>
-    <artifactId>paperspigot-parent</artifactId>
+    <groupId>net.astrocube</groupId>
+    <artifactId>gammaspigot-parent</artifactId>
     <version>1.8-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>PaperSpigot-Parent</name>
-    <description>Parent project for all PaperSpigot modules.</description>
-    <url>https://github.com/PaperSpigot/Spigot</url>
+    <name>GammaSpigot-Parent</name>
+    <description>Parent project for all GammaSpigot modules.</description>
+    <url>https://github.com/AstroCube/GammaSpigot</url>
 
     <modules>
         <module>PaperSpigot-Server</module>
@@ -36,12 +36,12 @@
 
     <distributionManagement>
         <repository>
-            <id>maven-releases</id>
-            <url>https://repo.seocraft.net/repository/maven-releases</url>
+            <id>core-releases</id>
+            <url>https://repo.astrocube.net/repository/core-releases</url>
         </repository>
         <snapshotRepository>
-            <id>maven-snapshots</id>
-            <url>https://repo.seocraft.net/repository/maven-snapshots</url>
+            <id>core-snapshots</id>
+            <url>https://repo.astrocube.net/repository/core-snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 

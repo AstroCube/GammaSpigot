@@ -1,0 +1,167 @@
+From 05a3782ec09cf2611ea70a7a257f4a8a4965b505 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Mon, 4 Jan 2021 23:54:04 -0500
+Subject: [PATCH] Added ability to obtain players by id
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 0eeeb321..04fe2366 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -63,6 +63,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public int viewDistance; // PaperSpigot - Player view distance API
+     private int containerUpdateDelay; // PaperSpigot
+ 
++    private String databaseIdentifier;
++
++    public String getDatabaseIdentifier() {
++        return databaseIdentifier;
++    }
++
++    public void setDatabaseIdentifier(String databaseIdentifier) {
++        this.databaseIdentifier = databaseIdentifier;
++    }
++
+     @Override
+     public boolean ad() {
+         return this.collidesWithEntities && super.ad(); // (first !this.isDead near bottom of EntityLiving)
+@@ -122,6 +132,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             }
+         }
+ 
++        if (nbttagcompound.hasKey("databaseIdentifier")) {
++            this.databaseIdentifier = nbttagcompound.getString("databaseIdentifier");
++        }
++
+         this.getBukkitEntity().readExtraData(nbttagcompound); // CraftBukkit
+     }
+ 
+@@ -132,6 +146,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         this.getBukkitEntity().setExtraData(nbttagcompound); // CraftBukkit
+     }
+ 
++    @Override
++    public void e(NBTTagCompound nbttagcompound) {
++        super.e(nbttagcompound);
++        nbttagcompound.set("databaseIdentifier", new NBTTagString(this.databaseIdentifier));
++    }
++
+     // CraftBukkit start - World fallback code, either respawn location or global spawn
+     public void spawnIn(World world) {
+         super.spawnIn(world);
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 3c2d3197..c980264a 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -8,13 +8,8 @@ import io.netty.buffer.Unpooled;
+ import java.io.File;
+ import java.net.SocketAddress;
+ import java.text.SimpleDateFormat;
+-import java.util.ArrayList;
+-import java.util.Collection;
+-import java.util.HashSet;
+-import java.util.Iterator;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.UUID;
++import java.util.*;
++
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -49,6 +44,7 @@ public abstract class PlayerList {
+     private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
+     private final MinecraftServer server;
+     public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
++    private final Map<String, EntityPlayer> byIdentifier = Maps.newHashMap();
+     private final Map<UUID, EntityPlayer> j = Maps.newHashMap();
+     private final GameProfileBanList k;
+     private final IpBanList l;
+@@ -72,7 +68,7 @@ public abstract class PlayerList {
+         minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
+         minecraftserver.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
+         // CraftBukkit end
+-        
++
+         this.k = new GameProfileBanList(PlayerList.a);
+         this.l = new IpBanList(PlayerList.b);
+         this.operators = new OpList(PlayerList.c);
+@@ -84,6 +80,10 @@ public abstract class PlayerList {
+         this.maxPlayers = 8;
+     }
+ 
++    public EntityPlayer getByIdentifier(String identifier) {
++        return byIdentifier.get(identifier);
++    }
++
+     public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
+         GameProfile gameprofile = entityplayer.getProfile();
+         UserCache usercache = this.server.getUserCache();
+@@ -133,7 +133,7 @@ public abstract class PlayerList {
+ 
+         entityplayer.spawnIn(world);
+         entityplayer.setPosition(loc.getX(), loc.getY(), loc.getZ());
+-        entityplayer.setYawPitch(loc.getYaw(), loc.getPitch()); 
++        entityplayer.setYawPitch(loc.getYaw(), loc.getPitch());
+         // Spigot end
+ 
+         // CraftBukkit - Moved message to after join
+@@ -306,6 +306,7 @@ public abstract class PlayerList {
+         this.players.add(entityplayer);
+         this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
+         this.j.put(entityplayer.getUniqueID(), entityplayer);
++        this.byIdentifier.put(entityplayer.getDatabaseIdentifier(), entityplayer);
+         // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer})); // CraftBukkit - replaced with loop below
+         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index d24c5614..bfa32448 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -444,6 +444,16 @@ public final class CraftServer implements Server {
+         Validate.notNull(name, "Name cannot be null");
+ 
+         EntityPlayer player = playerList.getPlayer(name);
++
++        return (player != null) ? player.getBukkitEntity() : null;
++    }
++
++    @Override
++    public Player getPlayerByIdentifier(String id) {
++        Validate.notNull(id, "Identifier cannot be null");
++
++        EntityPlayer player = playerList.getByIdentifier(id);
++
+         return (player != null) ? player.getBukkitEntity() : null;
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index ace24526..dabc3de8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -57,7 +57,6 @@ import java.util.logging.Logger;
+ @DelegateDeserialization(CraftOfflinePlayer.class)
+ public class CraftPlayer extends CraftHumanEntity implements Player {
+     private Set<Hologram> holograms = new HashSet<>();
+-    private String databaseIdentifier = "";
+     private long firstPlayed = 0;
+     private long lastPlayed = 0;
+     private boolean hasPlayedBefore = false;
+@@ -1483,12 +1482,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+     @Override
+     public String getDatabaseIdentifier() {
+-        return this.databaseIdentifier;
++        return this.getHandle().getDatabaseIdentifier();
+     }
+ 
+     @Override
+     public void setDatabaseIdentifier(String identifier) {
+-        if (this.databaseIdentifier.equalsIgnoreCase("")) this.databaseIdentifier = identifier;
++        this.getHandle().setDatabaseIdentifier(identifier);
+     }
+ 
+     @Nullable
+-- 
+2.29.2.windows.3
+
