@@ -1,29 +1,21 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven 3.3.9'
+        jdk 'jdk8'
+    }
     stages {
-        stage('Static Analysis') {
+        stage ('Initialize') {
             steps {
-                echo 'Run the static analysis to the code'
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                '''
             }
         }
-        stage('Compile') {
+        stage('Build') {
             steps {
-                echo 'Compile the source code'
-            }
-        }
-        stage('Security Check') {
-            steps {
-                echo 'Run the security check against the application'
-            }
-        }
-        stage('Run Unit Tests') {
-            steps {
-                echo 'Run unit tests from the source code'
-            }
-        }
-        stage('Run Integration Tests') {
-            steps {
-                echo 'Run only crucial integration tests from the source code'
+                            sh './build.sh'
             }
         }
         stage('Publish Artifacts') {
