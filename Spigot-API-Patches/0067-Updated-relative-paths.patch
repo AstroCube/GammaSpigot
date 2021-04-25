@@ -1,0 +1,29 @@
+From 9b585acde5467ed4f87cf4c3e09f9a75ed89629e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Sun, 25 Apr 2021 12:10:38 -0500
+Subject: [PATCH] Updated relative paths
+
+
+diff --git a/pom.xml b/pom.xml
+index a61dac02..41118581 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,13 +3,13 @@
+     <modelVersion>4.0.0</modelVersion>
+ 
+     <parent>
+-        <groupId>net.astocube</groupId>
++        <groupId>net.astrocube</groupId>
+         <artifactId>gammaspigot-parent</artifactId>
+         <version>1.8-SNAPSHOT</version>
+         <relativePath>../pom.xml</relativePath>
+     </parent>
+ 
+-    <artifactId>paperspigot-api</artifactId>
++    <artifactId>gammaspigot-api</artifactId>
+     <version>1.8-SNAPSHOT</version>
+     <packaging>jar</packaging>
+ 
+-- 
+2.31.1.windows.1
+

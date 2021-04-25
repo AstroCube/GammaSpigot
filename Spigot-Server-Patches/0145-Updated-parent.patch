@@ -1,0 +1,24 @@
+From bd074829db63870cabf11e919d94fea9ce2b7493 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ian=20Casta=C3=B1o?= <ianfe@martina.com.co>
+Date: Sun, 25 Apr 2021 11:52:41 -0500
+Subject: [PATCH] Updated parent
+
+
+diff --git a/pom.xml b/pom.xml
+index 0b15dd43..0cb48d69 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,8 +3,8 @@
+     <modelVersion>4.0.0</modelVersion>
+ 
+     <parent>
+-        <groupId>net.seocraft</groupId>
+-        <artifactId>paperspigot-parent</artifactId>
++        <groupId>net.astrocube</groupId>
++        <artifactId>gammaspigot-parent</artifactId>
+         <version>1.8-SNAPSHOT</version>
+         <relativePath>../pom.xml</relativePath>
+     </parent>
+-- 
+2.31.1.windows.1
+
