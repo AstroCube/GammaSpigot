@@ -4,12 +4,6 @@ pipeline {
         maven 'Maven 3'
         jdk 'JDK8'
     }
-    dir('SpigotBungeeBridge') {
-            git url: 'https://github.com/AstroCube/Spigot-Bungee-Bridge.git'
-    }
-    dir('Waterfall') {
-        git url: 'https://github.com/AstroCube/Waterfall.git'
-    }
     stages {
         stage ('Initialize') {
             steps {
@@ -19,22 +13,32 @@ pipeline {
                 '''
             }
         }
-        stage ('Dependency Build') {
-            dir('SpigotBungeeBridge') {
-                sh 'mvn clean install'
-            }
-            dir('Waterfall') {
-                sh 'mvn clean install'
+        stage('Dependency Fetching') {
+            steps {
+               configFileProvider([configFile(fileId: 'b8e2316f-5cad-48e6-ab64-1afae45b71b3', variable: 'MAVEN_SETTINGS')]) {
+                   dir('Waterfall') {
+                       git url: 'https://github.com/AstroCube/Waterfall.git'
+                       sh './waterfall build'
+                   }
+                   dir('Bridge') {
+                       git url: 'https://github.com/AstroCube/Spigot-Bungee-Bridge.git'
+                       sh 'mvn -s $MAVEN_SETTINGS install'
+                   }
+               }
             }
         }
         stage('Build') {
             steps {
-                            sh './build.sh'
+                configFileProvider([configFile(fileId: 'b8e2316f-5cad-48e6-ab64-1afae45b71b3', variable: 'MAVEN_SETTINGS')]) {
+                    sh './build.sh'
+                }
             }
         }
-        stage('Publish Artifacts') {
+        stage('Deploy') {
             steps {
-                echo 'Save the assemblies generated from the compilation'
+                configFileProvider([configFile(fileId: 'b8e2316f-5cad-48e6-ab64-1afae45b71b3', variable: 'MAVEN_SETTINGS')]) {
+                    sh 'mvn -s $MAVEN_SETTINGS deploy'
+                }
             }
         }
     }
