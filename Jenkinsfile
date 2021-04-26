@@ -4,6 +4,12 @@ pipeline {
         maven 'Maven 3'
         jdk 'JDK8'
     }
+    dir('SpigotBungeeBridge') {
+            git url: 'https://github.com/AstroCube/Spigot-Bungee-Bridge.git'
+    }
+    dir('Waterfall') {
+        git url: 'https://github.com/AstroCube/Waterfall.git'
+    }
     stages {
         stage ('Initialize') {
             steps {
@@ -11,6 +17,14 @@ pipeline {
                     echo "PATH = ${PATH}"
                     echo "M2_HOME = ${M2_HOME}"
                 '''
+            }
+        }
+        stage ('Dependency Build') {
+            dir('SpigotBungeeBridge') {
+                sh 'mvn clean install'
+            }
+            dir('Waterfall') {
+                sh 'mvn clean install'
             }
         }
         stage('Build') {
