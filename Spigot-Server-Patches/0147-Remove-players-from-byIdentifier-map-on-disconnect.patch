@@ -1,0 +1,24 @@
+From 8c637b515ced28fcb00610eecf0a0d893ce6a4a9 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Thu, 13 May 2021 01:15:56 -0500
+Subject: [PATCH] Remove players from byIdentifier map on disconnect
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 765b62fa..01a230af 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -391,6 +391,10 @@ public abstract class PlayerList {
+         EntityPlayer entityplayer1 = (EntityPlayer) this.j.get(uuid);
+ 
+         if (entityplayer1 == entityplayer) {
++            String dbId = entityplayer.getDatabaseIdentifier();
++            if (dbId != null) {
++                this.byIdentifier.remove(dbId);
++            }
+             this.j.remove(uuid);
+             this.o.remove(uuid);
+         }
+-- 
+2.31.1
+
