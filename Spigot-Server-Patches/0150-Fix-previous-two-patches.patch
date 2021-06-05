@@ -1,0 +1,54 @@
+From b2df39f9c366c79a6bf0a16c6eaaeb6538c02bc8 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Sat, 5 Jun 2021 00:19:15 -0500
+Subject: [PATCH] Fix previous two patches
+
+
+diff --git a/src/main/java/net/minecraft/server/Scoreboard.java b/src/main/java/net/minecraft/server/Scoreboard.java
+index c034ceeb..44f147ed 100644
+--- a/src/main/java/net/minecraft/server/Scoreboard.java
++++ b/src/main/java/net/minecraft/server/Scoreboard.java
+@@ -41,14 +41,10 @@ public class Scoreboard {
+                 throw new IllegalArgumentException("An objective with the name \'" + s + "\' already exists!");
+             } else {
+                 scoreboardobjective = new ScoreboardObjective(this, s, iscoreboardcriteria);
+-                Object object = (List) this.objectivesByCriteria.get(iscoreboardcriteria);
++                List<ScoreboardObjective> object = this.objectivesByCriteria
++                    .computeIfAbsent(iscoreboardcriteria, k -> Lists.newArrayList());
+ 
+-                if (object == null) {
+-                    object = Lists.newArrayList();
+-                    this.objectivesByCriteria.put(iscoreboardcriteria, object);
+-                }
+-
+-                ((List) object).add(scoreboardobjective);
++                object.add(scoreboardobjective);
+                 this.objectivesByName.put(s, scoreboardobjective);
+                 this.handleObjectiveAdded(scoreboardobjective);
+                 return scoreboardobjective;
+@@ -78,18 +74,14 @@ public class Scoreboard {
+         if (s.length() > 40) {
+             throw new IllegalArgumentException("The player name \'" + s + "\' is too long!");
+         } else {
+-            Object object = (Map) this.playerScores.get(s);
+-
+-            if (object == null) {
+-                object = Maps.newHashMap();
+-                this.playerScores.put(s, object);
+-            }
++            Map<ScoreboardObjective, ScoreboardScore> object = this.playerScores
++                .computeIfAbsent(s, k -> Maps.newHashMap());
+ 
+-            ScoreboardScore scoreboardscore = (ScoreboardScore) ((Map) object).get(scoreboardobjective);
++            ScoreboardScore scoreboardscore = object.get(scoreboardobjective);
+ 
+             if (scoreboardscore == null) {
+                 scoreboardscore = new ScoreboardScore(this, scoreboardobjective, s);
+-                ((Map) object).put(scoreboardobjective, scoreboardscore);
++                object.put(scoreboardobjective, scoreboardscore);
+             }
+ 
+             return scoreboardscore;
+-- 
+2.31.1
+
