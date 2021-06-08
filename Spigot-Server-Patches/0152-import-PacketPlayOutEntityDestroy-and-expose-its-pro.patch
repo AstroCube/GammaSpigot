@@ -1,0 +1,57 @@
+From 90afe99f8213634608d4dba0ad7852f5d8fe104a Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Mon, 7 Jun 2021 20:29:12 -0500
+Subject: [PATCH] import PacketPlayOutEntityDestroy and expose its propertie
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutEntityDestroy.java b/src/main/java/net/minecraft/server/PacketPlayOutEntityDestroy.java
+new file mode 100644
+index 00000000..0f6877a6
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/PacketPlayOutEntityDestroy.java
+@@ -0,0 +1,42 @@
++package net.minecraft.server;
++
++import java.io.IOException;
++
++public class PacketPlayOutEntityDestroy implements Packet<PacketListenerPlayOut> {
++
++    private int[] a;
++
++    public PacketPlayOutEntityDestroy() {}
++
++    public PacketPlayOutEntityDestroy(int... entityIds) {
++        this.a = entityIds;
++    }
++
++    public void a(PacketDataSerializer serializer) throws IOException {
++        this.a = new int[serializer.e()];
++
++        for (int i = 0; i < this.a.length; ++i) {
++            this.a[i] = serializer.e();
++        }
++
++    }
++
++    public void b(PacketDataSerializer serializer) throws IOException {
++        serializer.b(this.a.length);
++
++        for (int j : this.a) {
++            serializer.b(j);
++        }
++    }
++
++    public void a(PacketListenerPlayOut listener) {
++        listener.a(this);
++    }
++
++    // GammaSpigot
++    public int[] getEntityIds() {
++        return a;
++    }
++    // GammaSpigot end
++
++}
+-- 
+2.31.1
+
