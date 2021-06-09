@@ -1,0 +1,464 @@
+From 3a132e2f8200103a385a0eb46eb31f8e157ee0d3 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Wed, 9 Jun 2021 02:57:10 -0500
+Subject: [PATCH] Use asm-generated event executors when possible
+
+
+diff --git a/pom.xml b/pom.xml
+index 41118581..1164edba 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -41,6 +41,22 @@
+             <!-- Trove Provided by CraftBukkit -->
+             <scope>provided</scope>
+         </dependency>
++
++        <!-- GammaSpigot - Add ASM to generate event executors  -->
++        <dependency>
++            <groupId>org.ow2.asm</groupId>
++            <artifactId>asm</artifactId>
++            <version>9.1</version>
++            <scope>compile</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.ow2.asm</groupId>
++            <artifactId>asm-commons</artifactId>
++            <version>9.1</version>
++            <scope>compile</scope>
++        </dependency>
++        <!-- GammaSpigot end -->
++
+         <dependency>
+             <groupId>commons-lang</groupId>
+             <artifactId>commons-lang</artifactId>
+diff --git a/src/main/java/org/bukkit/event/executor/EventExecutorFactory.java b/src/main/java/org/bukkit/event/executor/EventExecutorFactory.java
+new file mode 100644
+index 00000000..08368f8a
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/EventExecutorFactory.java
+@@ -0,0 +1,87 @@
++package org.bukkit.event.executor;
++
++import com.google.common.base.Preconditions;
++import org.bukkit.event.executor.asm.ASMEventExecutorGenerator;
++import org.bukkit.event.executor.asm.ClassDefiner;
++import org.bukkit.event.Event;
++import org.bukkit.plugin.EventExecutor;
++
++import javax.annotation.ParametersAreNonnullByDefault;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.function.Function;
++
++public class EventExecutorFactory {
++
++	private static final Map<Method, Class<? extends EventExecutor>> EXECUTORS;
++
++	static {
++		EXECUTORS = new ConcurrentHashMap<Method, Class<? extends EventExecutor>>() {
++
++			@Override
++			@ParametersAreNonnullByDefault
++			public Class<? extends EventExecutor> computeIfAbsent(
++					Method key,
++					Function<? super Method, ? extends Class<? extends EventExecutor>> mappingFunction
++			) {
++				Class<? extends EventExecutor> executorClass = get(key);
++				if (executorClass != null) {
++					return executorClass;
++				}
++
++				//noinspection SynchronizationOnLocalVariableOrMethodParameter
++				synchronized (key) {
++					executorClass = get(key);
++					if (executorClass == null) {
++						return super.computeIfAbsent(key, mappingFunction);
++					} else {
++						return executorClass;
++					}
++				}
++			}
++
++		};
++	}
++
++	public static EventExecutor create(Method method, Class<? extends Event> eventClass) {
++		Preconditions.checkNotNull(method,
++				"Null method");
++		Preconditions.checkArgument(method.getParameterCount() != 0,
++				"Incorrect number of arguments %s", method.getParameterCount());
++		Preconditions.checkArgument(method.getParameterTypes()[0] == eventClass,
++				"First parameter %s doesn't match event class %s", method.getParameterTypes()[0], eventClass);
++
++
++		if (Modifier.isStatic(method.getModifiers())) {
++			return new StaticMethodHandleEventExecutor(eventClass, method);
++		} else if (Modifier.isPublic(method.getDeclaringClass().getModifiers()) && Modifier.isPublic(method.getModifiers())) {
++
++			// get the existing generated EventExecutor class for the Method or generate one
++			Class<? extends EventExecutor> executorClass = EXECUTORS.computeIfAbsent(method, (__) -> {
++				String name = ASMEventExecutorGenerator.generateName();
++				byte[] classData = ASMEventExecutorGenerator.generate(method, name);
++				return ClassDefiner.getInstance().defineClass(
++						method.getDeclaringClass().getClassLoader(),
++						name,
++						classData
++				).asSubclass(EventExecutor.class);
++			});
++
++			try {
++				EventExecutor asmExecutor = executorClass.newInstance();
++				// Define a wrapper to conform to bukkit stupidity (passing in events that don't match and wrapper exception)
++				return (listener, event) -> {
++					if (!eventClass.isInstance(event)) return;
++					asmExecutor.execute(listener, event);
++				};
++			} catch (InstantiationException | IllegalAccessException e) {
++				throw new AssertionError("Unable to initialize generated event executor", e);
++			}
++		} else {
++			return new MethodHandleEventExecutor(eventClass, method);
++		}
++	}
++
++}
+diff --git a/src/main/java/org/bukkit/event/executor/MethodHandleEventExecutor.java b/src/main/java/org/bukkit/event/executor/MethodHandleEventExecutor.java
+new file mode 100644
+index 00000000..54ba6364
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/MethodHandleEventExecutor.java
+@@ -0,0 +1,37 @@
++package org.bukkit.event.executor;
++
++import org.bukkit.event.Event;
++import org.bukkit.event.EventException;
++import org.bukkit.event.Listener;
++import org.bukkit.plugin.EventExecutor;
++import org.spigotmc.SneakyThrow;
++
++import java.lang.invoke.MethodHandle;
++import java.lang.invoke.MethodHandles;
++import java.lang.reflect.Method;
++
++public class MethodHandleEventExecutor implements EventExecutor {
++
++	private final Class<? extends Event> eventClass;
++	private final MethodHandle handle;
++
++	public MethodHandleEventExecutor(Class<? extends Event> eventClass, Method m) {
++		this.eventClass = eventClass;
++		try {
++			m.setAccessible(true);
++			this.handle = MethodHandles.lookup().unreflect(m);
++		} catch (IllegalAccessException e) {
++			throw new AssertionError("Unable to set accessible", e);
++		}
++	}
++
++	@Override
++	public void execute(Listener listener, Event event) throws EventException {
++		if (!eventClass.isInstance(event)) return;
++		try {
++			handle.invoke(listener, event);
++		} catch (Throwable error) {
++			SneakyThrow.sneaky(error);
++		}
++	}
++}
+\ No newline at end of file
+diff --git a/src/main/java/org/bukkit/event/executor/StaticMethodHandleEventExecutor.java b/src/main/java/org/bukkit/event/executor/StaticMethodHandleEventExecutor.java
+new file mode 100644
+index 00000000..d477b648
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/StaticMethodHandleEventExecutor.java
+@@ -0,0 +1,42 @@
++package org.bukkit.event.executor;
++
++import com.google.common.base.Preconditions;
++import org.bukkit.event.Event;
++import org.bukkit.event.EventException;
++import org.bukkit.event.Listener;
++import org.bukkit.plugin.EventExecutor;
++import org.spigotmc.SneakyThrow;
++
++import java.lang.invoke.MethodHandle;
++import java.lang.invoke.MethodHandles;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++
++public class StaticMethodHandleEventExecutor implements EventExecutor {
++
++	private final Class<? extends Event> eventClass;
++	private final MethodHandle handle;
++
++	public StaticMethodHandleEventExecutor(Class<? extends Event> eventClass, Method m) {
++		Preconditions.checkArgument(Modifier.isStatic(m.getModifiers()), "Not a static method: %s", m);
++		Preconditions.checkArgument(eventClass != null, "eventClass is null");
++		this.eventClass = eventClass;
++		try {
++			m.setAccessible(true);
++			this.handle = MethodHandles.lookup().unreflect(m);
++		} catch (IllegalAccessException e) {
++			throw new AssertionError("Unable to set accessible", e);
++		}
++	}
++
++	@Override
++	public void execute(Listener listener, Event event) throws EventException {
++		if (!eventClass.isInstance(event)) return;
++		try {
++			handle.invoke(event);
++		} catch (Throwable error) {
++			SneakyThrow.sneaky(error);
++		}
++	}
++
++}
+\ No newline at end of file
+diff --git a/src/main/java/org/bukkit/event/executor/asm/ASMEventExecutorGenerator.java b/src/main/java/org/bukkit/event/executor/asm/ASMEventExecutorGenerator.java
+new file mode 100644
+index 00000000..ed9eef68
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/asm/ASMEventExecutorGenerator.java
+@@ -0,0 +1,80 @@
++package org.bukkit.event.executor.asm;
++
++import org.bukkit.plugin.EventExecutor;
++import org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.Opcodes;
++import org.objectweb.asm.Type;
++import org.objectweb.asm.commons.GeneratorAdapter;
++
++import java.lang.reflect.Method;
++import java.util.concurrent.atomic.AtomicInteger;
++
++public class ASMEventExecutorGenerator {
++
++	private static final AtomicInteger ID_COUNTER = new AtomicInteger(1);
++	private static final String INTERFACE_NAME = Type.getInternalName(EventExecutor.class);
++	private static final String BASE_NAME = "net.astrocube.paper.event.executor.asm.generated.GeneratedEventExecutor";
++
++	/**
++	 * Generates an unique name for the
++	 * generated event executors
++	 */
++	public static String generateName() {
++		return BASE_NAME + ID_COUNTER.getAndIncrement();
++	}
++
++	/**
++	 * Generates a class implementing {@link EventExecutor}
++	 * that executes the given {@code method}, modification of
++	 * the destroystokyo's ASMEventExecutorGenerator
++	 */
++	public static byte[] generate(Method method, String name) {
++		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
++		writer.visit(
++				Opcodes.V1_8,
++				Opcodes.ACC_PUBLIC,
++				name.replace('.', '/'),
++				null,
++				Type.getInternalName(Object.class),
++				new String[] {INTERFACE_NAME}
++		);
++
++		// Generate constructor
++		GeneratorAdapter methodGenerator = new GeneratorAdapter(
++				writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null),
++				Opcodes.ACC_PUBLIC,
++				"<init>",
++				"()V"
++		);
++		methodGenerator.loadThis();
++		// Invoke the super class (Object) constructor
++		methodGenerator.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Object.class), "<init>", "()V", false);
++		methodGenerator.returnValue();
++		methodGenerator.endMethod();
++
++		// Generate the execute method
++		methodGenerator = new GeneratorAdapter(
++				writer.visitMethod(Opcodes.ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Event;)V", null, null),
++				Opcodes.ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Listener;)V"
++		);
++		methodGenerator.loadArg(0);
++		methodGenerator.checkCast(Type.getType(method.getDeclaringClass()));
++		methodGenerator.loadArg(1);
++		methodGenerator.checkCast(Type.getType(method.getParameterTypes()[0]));
++		methodGenerator.visitMethodInsn(
++				method.getDeclaringClass().isInterface() ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL,
++				Type.getInternalName(method.getDeclaringClass()),
++				method.getName(),
++				Type.getMethodDescriptor(method),
++				method.getDeclaringClass().isInterface()
++		);
++		if (method.getReturnType() != void.class) {
++			methodGenerator.pop();
++		}
++		methodGenerator.returnValue();
++		methodGenerator.endMethod();
++		writer.visitEnd();
++		return writer.toByteArray();
++	}
++
++}
+diff --git a/src/main/java/org/bukkit/event/executor/asm/ClassDefiner.java b/src/main/java/org/bukkit/event/executor/asm/ClassDefiner.java
+new file mode 100644
+index 00000000..5dce15d5
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/asm/ClassDefiner.java
+@@ -0,0 +1,20 @@
++package org.bukkit.event.executor.asm;
++
++public interface ClassDefiner {
++
++	/**
++	 * Defines a class
++	 * @param parentLoader the parent classloader
++	 * @param name         the name of the class
++	 * @param data         the class data to load
++	 * @return the defined class
++	 * @throws ClassFormatError     if the class data is invalid
++	 * @throws NullPointerException if any of the arguments are null
++	 */
++	Class<?> defineClass(ClassLoader parentLoader, String name, byte[] data);
++
++	static ClassDefiner getInstance() {
++		return SafeClassDefiner.INSTANCE;
++	}
++
++}
+\ No newline at end of file
+diff --git a/src/main/java/org/bukkit/event/executor/asm/SafeClassDefiner.java b/src/main/java/org/bukkit/event/executor/asm/SafeClassDefiner.java
+new file mode 100644
+index 00000000..cfe11f7a
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/executor/asm/SafeClassDefiner.java
+@@ -0,0 +1,64 @@
++package org.bukkit.event.executor.asm;
++
++import com.google.common.base.Preconditions;
++import com.google.common.collect.MapMaker;
++
++import java.util.Map;
++
++public final class SafeClassDefiner implements ClassDefiner {
++
++	protected static final SafeClassDefiner INSTANCE = new SafeClassDefiner();
++	private final Map<ClassLoader, GeneratedClassLoader> loaders = new MapMaker().weakKeys().makeMap();
++
++	private SafeClassDefiner() {
++	}
++
++	@Override
++	public Class<?> defineClass(ClassLoader parentLoader, String name, byte[] data) {
++		GeneratedClassLoader loader = loaders.computeIfAbsent(parentLoader, GeneratedClassLoader::new);
++		synchronized (loader.getClassLoadingLock(name)) {
++			Preconditions.checkState(!loader.hasClass(name), "%s already defined", name);
++			Class<?> clazz = loader.define(name, data);
++			assert clazz.getName().equals(name);
++			return clazz;
++		}
++	}
++
++	private static class GeneratedClassLoader extends ClassLoader {
++
++		static {
++			ClassLoader.registerAsParallelCapable();
++		}
++
++		protected GeneratedClassLoader(ClassLoader parent) {
++			super(parent);
++		}
++
++		private Class<?> define(String name, byte[] data) {
++			synchronized (getClassLoadingLock(name)) {
++				assert !hasClass(name);
++				Class<?> clazz = defineClass(name, data, 0, data.length);
++				resolveClass(clazz);
++				return clazz;
++			}
++		}
++
++		@Override
++		public Object getClassLoadingLock(String name) {
++			return super.getClassLoadingLock(name);
++		}
++
++		public boolean hasClass(String name) {
++			synchronized (getClassLoadingLock(name)) {
++				try {
++					Class.forName(name);
++					return true;
++				} catch (ClassNotFoundException e) {
++					return false;
++				}
++			}
++		}
++
++	}
++
++}
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+index b057b053..b986b23c 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+@@ -27,6 +27,7 @@ import org.bukkit.event.Event;
+ import org.bukkit.event.EventException;
+ import org.bukkit.event.EventHandler;
+ import org.bukkit.event.Listener;
++import org.bukkit.event.executor.EventExecutorFactory;
+ import org.bukkit.event.server.PluginDisableEvent;
+ import org.bukkit.event.server.PluginEnableEvent;
+ import org.bukkit.plugin.AuthorNagException;
+@@ -291,20 +292,12 @@ public final class JavaPluginLoader implements PluginLoader {
+                 }
+             }
+ 
+-            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(new EventExecutor() { // Spigot
+-                public void execute(Listener listener, Event event) throws EventException {
+-                    try {
+-                        if (!eventClass.isAssignableFrom(event.getClass())) {
+-                            return;
+-                        }
+-                        method.invoke(listener, event);
+-                    } catch (InvocationTargetException ex) {
+-                        throw new EventException(ex.getCause());
+-                    } catch (Throwable t) {
+-                        throw new EventException(t);
+-                    }
+-                }
+-            }, plugin, method, eventClass); // Spigot
++            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(
++                EventExecutorFactory.create(method, eventClass),
++                plugin,
++                method,
++                eventClass
++            ); // Spigot
+             if (false) { // Spigot - RL handles useTimings check now
+                 eventSet.add(new TimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
+             } else {
+diff --git a/src/main/java/org/spigotmc/SneakyThrow.java b/src/main/java/org/spigotmc/SneakyThrow.java
+new file mode 100644
+index 00000000..7ff15cff
+--- /dev/null
++++ b/src/main/java/org/spigotmc/SneakyThrow.java
+@@ -0,0 +1,14 @@
++package org.spigotmc;
++
++public class SneakyThrow {
++
++    public static void sneaky(Throwable error) {
++        throw SneakyThrow.superSneaky(error);
++    }
++
++    @SuppressWarnings("unchecked")
++    private static <T extends Throwable> T superSneaky(Throwable t) throws T {
++        throw (T) t;
++    }
++
++}
+-- 
+2.31.1
+
