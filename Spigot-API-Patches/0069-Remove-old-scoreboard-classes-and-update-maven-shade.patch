@@ -1,0 +1,145 @@
+From 12d605accc07941b83e9820cbd42add051192c06 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Wed, 9 Jun 2021 03:33:33 -0500
+Subject: [PATCH] Remove old scoreboard classes and update maven-shade-plugin
+
+
+diff --git a/pom.xml b/pom.xml
+index 1164edba..b8d86fca 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -172,7 +172,7 @@
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-shade-plugin</artifactId>
+-                <version>2.3</version>
++                <version>3.2.3</version>
+                 <executions>
+                     <execution>
+                         <phase>package</phase>
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 476a97bc..52fb2dbf 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -20,7 +20,6 @@ import org.bukkit.conversations.Conversable;
+ import org.bukkit.creator.hologram.Hologram;
+ import org.bukkit.map.MapView;
+ import org.bukkit.plugin.messaging.PluginMessageRecipient;
+-import org.bukkit.scoreboard.GameBoard;
+ import org.bukkit.scoreboard.Scoreboard;
+ // PaperSpigot start
+ import org.github.paperspigot.Title;
+@@ -1220,14 +1219,6 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+ 
+     void setDatabaseIdentifier(String identifier);
+ 
+-    @Nullable GameBoard getAttachedBoard();
+-
+-    boolean hasAttachedBoard();
+-
+-    void setAttachedBoard(GameBoard board);
+-
+-    void removeScoreboard();
+-
+     // Spigot start
+     class Spigot extends Entity.Spigot
+     {
+diff --git a/src/main/java/org/bukkit/scoreboard/BoardEntry.java b/src/main/java/org/bukkit/scoreboard/BoardEntry.java
+deleted file mode 100644
+index b5f6b409..00000000
+--- a/src/main/java/org/bukkit/scoreboard/BoardEntry.java
++++ /dev/null
+@@ -1,9 +0,0 @@
+-package org.bukkit.scoreboard;
+-
+-public interface BoardEntry {
+-
+-    String getPrefix();
+-
+-    String getSuffix();
+-
+-}
+diff --git a/src/main/java/org/bukkit/scoreboard/BoardLine.java b/src/main/java/org/bukkit/scoreboard/BoardLine.java
+deleted file mode 100644
+index b68a489a..00000000
+--- a/src/main/java/org/bukkit/scoreboard/BoardLine.java
++++ /dev/null
+@@ -1,11 +0,0 @@
+-package org.bukkit.scoreboard;
+-
+-public interface BoardLine {
+-
+-    BoardEntry getText();
+-
+-    int getPosition();
+-
+-    boolean isStatic();
+-
+-}
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoard.java b/src/main/java/org/bukkit/scoreboard/GameBoard.java
+deleted file mode 100644
+index 68f439b2..00000000
+--- a/src/main/java/org/bukkit/scoreboard/GameBoard.java
++++ /dev/null
+@@ -1,36 +0,0 @@
+-package org.bukkit.scoreboard;
+-
+-import org.bukkit.entity.Player;
+-
+-import javax.annotation.Nullable;
+-import java.util.Optional;
+-import java.util.Set;
+-import java.util.UUID;
+-
+-public interface GameBoard {
+-
+-    UUID getId();
+-
+-    Set<BoardLine> getLines();
+-
+-    Optional<BoardLine> getLine(int line);
+-
+-    void addLine(int line, String text);
+-
+-    void addStaticLine(int line, String text);
+-
+-    void setLine(int line, String text);
+-
+-    void removeLine(int line);
+-
+-    void setTitle(String title);
+-
+-   String getTitle();
+-
+-    void assignScoreboard(Player player);
+-
+-    @Nullable Player getAssignation();
+-
+-    void unassignScoreboard(Player player);
+-
+-}
+diff --git a/src/main/java/org/bukkit/scoreboard/GameBoardException.java b/src/main/java/org/bukkit/scoreboard/GameBoardException.java
+deleted file mode 100644
+index 0d91eb84..00000000
+--- a/src/main/java/org/bukkit/scoreboard/GameBoardException.java
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package org.bukkit.scoreboard;
+-
+-public class GameBoardException extends RuntimeException {
+-
+-    private String message;
+-
+-    public GameBoardException(String message) {
+-        this.message = message;
+-    }
+-
+-    @Override
+-    public String getMessage() {
+-        return this.message;
+-    }
+-
+-}
+-- 
+2.31.1
+
