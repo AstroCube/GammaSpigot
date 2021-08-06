@@ -1,0 +1,62 @@
+From f8775fed19e6e33dbec154d41c2dfd53912d3b52 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Fri, 6 Aug 2021 16:01:26 -0500
+Subject: [PATCH] Add player protocol version
+
+
+diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
+index 215648ec..f3ece208 100644
+--- a/src/main/java/net/minecraft/server/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/HandshakeListener.java
+@@ -62,11 +62,16 @@ public class HandshakeListener implements PacketHandshakingInListener {
+             }
+             // CraftBukkit end
+ 
+-            if (packethandshakinginsetprotocol.b() > 47) {
++            // GammaSpigot Start - Add protocol version
++            int protocolVersion = packethandshakinginsetprotocol.b();
++            this.b.protocolVersion = protocolVersion;
++            // GammaSpigot End
++
++            if (protocolVersion > 47) {
+                 chatcomponenttext = new ChatComponentText( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage.replaceAll("'", "''"), "1.8.8" ) ); // Spigot
+                 this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext));
+                 this.b.close(chatcomponenttext);
+-            } else if (packethandshakinginsetprotocol.b() < 47) {
++            } else if (protocolVersion < 47) {
+                 chatcomponenttext = new ChatComponentText( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage.replaceAll("'", "''"), "1.8.8" ) ); // Spigot
+                 this.b.handle(new PacketLoginOutDisconnect(chatcomponenttext));
+                 this.b.close(chatcomponenttext);
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 9d23c6c0..301ab07c 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -70,6 +70,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     public com.mojang.authlib.properties.Property[] spoofedProfile;
+     public boolean preparing = true;
+     // Spigot End
++    // GammaSpigot Start - Add protocol version
++    public int protocolVersion = 47;
++    // GammaSpigot End
+     private PacketListener m;
+     private IChatBaseComponent n;
+     private boolean o;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 9c210c79..8a8deb33 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -591,6 +591,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         server.getHandle().playerFileData.save(getHandle());
+     }
+ 
++    @Override
++    public int getProtocolVersion() {
++        return this.getHandle().playerConnection.networkManager.protocolVersion;
++    }
++
+     @Deprecated
+     @Override
+     public void updateInventory() {
+-- 
+2.32.0
+

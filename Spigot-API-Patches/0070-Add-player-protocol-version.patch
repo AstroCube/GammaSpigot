@@ -1,0 +1,28 @@
+From 1adbe13f71f661e875251573eac994e1eba8098a Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Fri, 6 Aug 2021 16:02:00 -0500
+Subject: [PATCH] Add player protocol version
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 52fb2dbf..48335966 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -459,6 +459,14 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+     void hideTitle();
+     // Paper end
+ 
++    // GammaSpigot start - Add protocol version
++    /**
++     * Returns the player's client protocol
++     * version. See https://wiki.vg/Protocol_version_numbers
++     */
++    int getProtocolVersion();
++    // GammaSpigot end
++
+     /**
+      * Forces an update of the player's entire inventory.
+      *
+-- 
+2.32.0
+
