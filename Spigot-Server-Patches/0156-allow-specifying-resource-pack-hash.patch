@@ -1,0 +1,32 @@
+From af34715891330ffe1c9304863072117511e6e4f1 Mon Sep 17 00:00:00 2001
+From: yusshu <yushu@unnamed.team>
+Date: Tue, 10 Aug 2021 01:11:09 -0500
+Subject: [PATCH] allow specifying resource pack hash
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 8a8deb331..101a48c32 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1145,10 +1145,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+     @Override
+     public void setResourcePack(String url) {
+-        Validate.notNull(url, "Resource pack URL cannot be null");
++        setResourcePack(url, "null");
++    }
+ 
+-        getHandle().setResourcePack(url, "null");
++    // GammaSpigot Start - Allow specifying resource pack hash
++    @Override
++    public void setResourcePack(String url, String hash) {
++        Validate.notNull(url, "Resource pack URL cannot be null");
++        getHandle().setResourcePack(url, hash);
+     }
++    // GammaSpigot End
+ 
+     public void addChannel(String channel) {
+         com.google.common.base.Preconditions.checkState(channels.size() < 128, "Too many channels registered"); // Spigot
+-- 
+2.32.0
+
